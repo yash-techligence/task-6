@@ -143,6 +143,13 @@ app.post("/login", (req, res) => {
 
 });
 
+
+const submitRoutes = require("./routes/submit");
+const leaderboardRoutes = require("./routes/leaderboard");
+
+app.use("/submit", submitRoutes);
+app.use("/leaderboard", leaderboardRoutes);
+
 app.listen(5000, () => {
   console.log("Server running on port 5000");
 });

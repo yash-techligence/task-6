@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import API from "../api/axios";
+import { registerUser } from "../api";
 
 export default function Register() {
   const [form, setForm] = useState({ username: "", email: "", password: "" });
@@ -18,14 +18,14 @@ export default function Register() {
     setError("");
     setSuccess("");
     try {
-      const res = await API.post("/register", form);
-      if (res.data.success) {
+      const data = await registerUser(form);
+      if (data.success) {
         setSuccess("Account created! Redirecting to login...");
         setTimeout(() => navigate("/login"), 1500);
       } else {
-        setError(res.data.message);
+        setError(data.message);
       }
-    } catch (err) {
+    } catch {
       setError("Server error. Is the backend running?");
     } finally {
       setLoading(false);
@@ -33,29 +33,47 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 w-full max-w-md shadow-xl">
-
+    <div
+      className="min-h-screen flex items-center justify-center px-4"
+      style={{ background: "var(--bg)" }}
+    >
+      <div
+        className="rounded-2xl p-8 w-full max-w-md"
+        style={{
+          background: "var(--surface)",
+          border: "1px solid var(--border)",
+        }}
+      >
         <div className="mb-6">
-          <h2 className="text-3xl font-bold text-white mb-1">Create Account</h2>
-          <p className="text-gray-400 text-sm">Join the quiz and test your skills</p>
+          <h2
+            className="text-3xl font-bold mb-1"
+            style={{ color: "var(--text)" }}
+          >
+            Create Account
+          </h2>
+          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+            Join the quiz and test your skills
+          </p>
         </div>
 
         {error && (
-          <div className="bg-red-500/10 border border-red-500 text-red-400 rounded-lg px-4 py-2.5 mb-4 text-sm">
+          <div className="bg-red-500/10 border border-red-500/40 text-red-400 rounded-xl px-4 py-2.5 mb-4 text-sm">
             ⚠️ {error}
           </div>
         )}
 
         {success && (
-          <div className="bg-green-500/10 border border-green-500 text-green-400 rounded-lg px-4 py-2.5 mb-4 text-sm">
+          <div className="bg-green-500/10 border border-green-500/40 text-green-400 rounded-xl px-4 py-2.5 mb-4 text-sm">
             ✅ {success}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-gray-300 text-sm font-medium mb-1">
+            <label
+              className="block text-sm font-medium mb-1"
+              style={{ color: "var(--text-muted)" }}
+            >
               Username
             </label>
             <input
@@ -64,13 +82,21 @@ export default function Register() {
               required
               value={form.username}
               onChange={handleChange}
-              className="w-full bg-gray-800 text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition placeholder-gray-500"
               placeholder="johndoe"
+              className="w-full rounded-xl px-4 py-2.5 text-sm focus:outline-none transition"
+              style={{
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                color: "var(--text)",
+              }}
             />
           </div>
 
           <div>
-            <label className="block text-gray-300 text-sm font-medium mb-1">
+            <label
+              className="block text-sm font-medium mb-1"
+              style={{ color: "var(--text-muted)" }}
+            >
               Email Address
             </label>
             <input
@@ -79,13 +105,21 @@ export default function Register() {
               required
               value={form.email}
               onChange={handleChange}
-              className="w-full bg-gray-800 text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition placeholder-gray-500"
               placeholder="you@email.com"
+              className="w-full rounded-xl px-4 py-2.5 text-sm focus:outline-none transition"
+              style={{
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                color: "var(--text)",
+              }}
             />
           </div>
 
           <div>
-            <label className="block text-gray-300 text-sm font-medium mb-1">
+            <label
+              className="block text-sm font-medium mb-1"
+              style={{ color: "var(--text-muted)" }}
+            >
               Password
             </label>
             <input
@@ -94,21 +128,42 @@ export default function Register() {
               required
               value={form.password}
               onChange={handleChange}
-              className="w-full bg-gray-800 text-white border border-gray-700 rounded-lg px-4 py-2.5 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition placeholder-gray-500"
               placeholder="••••••••"
+              className="w-full rounded-xl px-4 py-2.5 text-sm focus:outline-none transition"
+              style={{
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                color: "var(--text)",
+              }}
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-semibold rounded-lg py-2.5 transition disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+            className="w-full font-semibold rounded-xl py-2.5 text-sm transition-all duration-200 hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+            style={{ background: "var(--accent)", color: "var(--bg)" }}
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                <svg
+                  className="animate-spin h-4 w-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8z"
+                  />
                 </svg>
                 Creating account...
               </span>
@@ -118,9 +173,16 @@ export default function Register() {
           </button>
         </form>
 
-        <p className="text-gray-400 text-sm text-center mt-6">
+        <p
+          className="text-sm text-center mt-6"
+          style={{ color: "var(--text-muted)" }}
+        >
           Already have an account?{" "}
-          <Link to="/login" className="text-indigo-400 hover:text-indigo-300 hover:underline transition">
+          <Link
+            to="/login"
+            className="font-semibold hover:underline transition"
+            style={{ color: "var(--accent)" }}
+          >
             Login here
           </Link>
         </p>

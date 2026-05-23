@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { fetchLeaderboard } from "../api";
+import { useAuth } from "../context/useAuth";
 import ScoreCard from "../components/ScoreCard";
 import QuizLeaderboard from "../components/QuizLeaderboard";
 
@@ -8,12 +9,13 @@ export default function ResultPage() {
   const { quizId } = useParams();
   const { state } = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const currentUser = localStorage.getItem("username");
+  const currentUser = user?.username;
   const score = state?.score ?? 0;
   const total = state?.total ?? 0;
   const timeTaken = state?.timeTaken ?? 0;
@@ -26,11 +28,19 @@ export default function ResultPage() {
   }, [quizId]);
 
   return (
-    <div className="min-h-screen p-6 md:p-10" style={{ background: "#080808" }}>
+    <div
+      className="min-h-screen p-6 md:p-10"
+      style={{ background: "var(--bg)" }}
+    >
       <div className="max-w-6xl mx-auto flex items-center justify-between mb-10">
         <button
           onClick={() => navigate("/dashboard")}
-          className="flex items-center gap-2 text-white/40 hover:text-white text-sm transition-colors duration-200"
+          className="flex items-center gap-2 text-sm transition-colors duration-200"
+          style={{ color: "var(--text-faint)" }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text)")}
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.color = "var(--text-faint)")
+          }
         >
           <svg
             width="16"
@@ -45,7 +55,10 @@ export default function ResultPage() {
           Back to Dashboard
         </button>
 
-        <span className="text-white/20 text-xs font-mono tracking-widest">
+        <span
+          className="text-xs font-mono tracking-widest"
+          style={{ color: "var(--text-faint)" }}
+        >
           QUIZ #{quizId}
         </span>
       </div>
@@ -56,7 +69,6 @@ export default function ResultPage() {
           total={total}
           timeTaken={timeTaken}
           onDashboard={() => navigate("/dashboard")}
-          // onRetry removed — retaking a quiz is not supported
         />
         <QuizLeaderboard
           leaderboard={leaderboard}

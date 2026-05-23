@@ -1,20 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap");
 @import "tailwindcss";
 
-* {
-  font-family: "Syne", sans-serif;
-}
-
-code,
-.mono {
-  font-family: "DM Mono", monospace;
-}
-
-/* ── Dark Theme (default) ── */
 :root {
   --accent: #c8ff00;
   --accent-dim: #a8d600;
-
   --bg: #080808;
   --surface: rgba(255, 255, 255, 0.03);
   --surface-hover: rgba(255, 255, 255, 0.06);
@@ -26,11 +15,9 @@ code,
   --card-bg: #000000;
 }
 
-/* ── Light Theme ── */
 [data-theme="light"] {
   --accent: #5a8a00;
   --accent-dim: #4a7200;
-
   --bg: #f4f4f0;
   --surface: rgba(0, 0, 0, 0.04);
   --surface-hover: rgba(0, 0, 0, 0.07);
@@ -42,10 +29,23 @@ code,
   --card-bg: #ffffff;
 }
 
-body {
-  background-color: var(--bg);
-  color: var(--text);
-  transition:
-    background-color 0.3s ease,
-    color 0.3s ease;
+@layer base {
+  *,
+  *::before,
+  *::after {
+    font-family: "Syne", sans-serif;
+  }
+
+  code,
+  .mono {
+    font-family: "DM Mono", monospace;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
+  }
 }

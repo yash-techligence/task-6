@@ -1,26 +1,15 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Sun, Moon } from "lucide-react";
 import { fetchQuizzes, fetchResults } from "../api";
-import { useTheme } from "../context/useTheme";
+import { useAuth } from "../context/useAuth";
 import QuizCard from "../components/QuizCard";
 
 export default function Dashboard() {
-  const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme();
-
+  const { user } = useAuth();
+  const username = user?.username ?? "User";
   const [available, setAvailable] = useState([]);
   const [attempted, setAttempted] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const username = localStorage.getItem("username") ?? "User";
-  const isAdmin = localStorage.getItem("role") === "admin";
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) navigate("/login");
-  }, [navigate]);
 
   useEffect(() => {
     Promise.all([fetchQuizzes(), fetchResults()])
@@ -68,84 +57,6 @@ export default function Dashboard() {
       style={{ background: "var(--bg)" }}
     >
       <div className="max-w-6xl mx-auto">
-        {/* ── Header ── */}
-        <div className="flex items-center justify-between mb-12">
-          <div className="flex items-center gap-3">
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm"
-              style={{ background: "var(--accent)", color: "var(--bg)" }}
-            >
-              Q
-            </div>
-            <span
-              className="font-bold tracking-tight"
-              style={{ color: "var(--text)" }}
-            >
-              QuizPlatform
-            </span>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {/* Theme toggle */}
-            <button
-              onClick={toggleTheme}
-              className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200"
-              style={{
-                background: "var(--surface)",
-                border: "1px solid var(--border)",
-                color: "var(--text-muted)",
-              }}
-            >
-              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-            </button>
-
-            {/* Admin only: Create Quiz */}
-            {isAdmin && (
-              <button
-                onClick={() => navigate("/quiz/create")}
-                className="flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-xl transition-all duration-200 hover:opacity-90 active:scale-95"
-                style={{ background: "var(--accent)", color: "var(--bg)" }}
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                >
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                Create Quiz
-              </button>
-            )}
-
-            {/* Sign out */}
-            <button
-              onClick={() => {
-                localStorage.clear();
-                navigate("/login");
-              }}
-              className="text-xs px-4 py-2 rounded-xl transition-colors duration-200"
-              style={{
-                color: "var(--text-muted)",
-                border: "1px solid var(--border)",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = "#f87171";
-                e.currentTarget.style.borderColor = "rgba(248,113,113,0.3)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = "var(--text-muted)";
-                e.currentTarget.style.borderColor = "var(--border)";
-              }}
-            >
-              Sign out
-            </button>
-          </div>
-        </div>
-
         {/* ── Welcome ── */}
         <div className="mb-10">
           <p

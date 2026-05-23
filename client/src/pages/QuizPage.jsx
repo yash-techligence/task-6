@@ -1,180 +1,186 @@
 import { useEffect, useState } from "react";
-import API from "../api/axios";
-import Navbar from "../components/Navbar";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { fetchQuizzes, submitQuiz } from "../api";
 
 export default function QuizPage() {
+  const { id } = useParams();
+  const navigate = useNavigate();
 
   const [quiz, setQuiz] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(true);
-  const [timeLeft, setTimeLeft] = useState(60);
-
-  const { id } = useParams();
-
-  useEffect(() => {
-    fetchQuiz();
-  }, []);
-
-  async function fetchQuiz() {
-    try {
-
-      const res = await API.get("/quiz");
-
-      if (res.data.success) {
-        const selectedQuiz = res.data.quizzes.find((q) => q.id === Number(id));
-      
-        setQuiz(selectedQuiz);
-      }
-
-    } catch (err) {
-
-      console.log(err);
-
-    } finally {
-
-      setLoading(false);
-
-    }
-  }
+  const [submitting, setSubmitting] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(null);
+  const [startTime] = useState(Date.now());
 
   useEffect(() => {
+    fetchQuizzes()
+      .then((quizzes) => {
+        const found = quizzes.find((q) => q.id === Number(id));
+        setQuiz(found ?? null);
+        if (found?.timeLimit) setTimeLeft(found.timeLimit);
+      })
+      .catch(() => setQuiz(null))
+      .finally(() => setLoading(false));
+  }, [id]);
 
-    if (timeLeft <= 0) {
-      handleSubmit();
+  useEffect(() => {
+    if (timeLeft === null || timeLeft <= 0) {
+      if (timeLeft === 0) handleSubmit();
       return;
     }
-
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
-    }, 1000);
-
+    const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
     return () => clearInterval(timer);
-
   }, [timeLeft]);
 
-  function handleOptionSelect(option) {
+  async function handleSubmit() {
+    if (submitting || !quiz) return;
+    setSubmitting(true);
 
-    setAnswers({
-      ...answers,
-      [currentQuestion]: option
+    const timeTaken = Math.round((Date.now() - startTime) / 1000);
+
+    const allQuestions = quiz.questions ?? [];
+    const score = allQuestions.reduce((acc, q, i) => {
+      return answers[i] === q.correct_answer ? acc + 1 : acc;
+    }, 0);
+
+    try {
+      await submitQuiz({
+        quizId: quiz.id,
+        score,
+        totalQuestions: allQuestions.length,
+        timeTaken,
+      });
+    } catch {
+      console.error("Failed to save result");
+    }
+
+    navigate(`/result/${quiz.id}`, {
+      state: { score, total: allQuestions.length, timeTaken },
     });
-
   }
 
-  async function handleSubmit() {
-
-    alert("Quiz Submitted");
-
-    console.log(answers);
-
+  function handleOptionSelect(option) {
+    setAnswers({ ...answers, [currentQuestion]: option });
   }
 
   if (loading) {
-    return <div className="text-white p-10">Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg)" }}>
+        <p style={{ color: "var(--text-muted)" }}>Loading quiz...</p>
+      </div>
+    );
   }
 
   if (!quiz) {
-    return <div className="text-white p-10">No quiz found</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg)" }}>
+        <p style={{ color: "var(--text-muted)" }}>Quiz not found.</p>
+      </div>
+    );
   }
-  if (!quiz.questions.length) {
-  return (
-    <div className="text-white p-10">
-      No questions found for this quiz
-    </div>
-  );
+
+  if (!quiz.questions?.length) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg)" }}>
+        <p style={{ color: "var(--text-muted)" }}>No questions found for this quiz.</p>
+      </div>
+    );
   }
+
   const question = quiz.questions[currentQuestion];
+  const isLast = currentQuestion === quiz.questions.length - 1;
+  const timerWarning = timeLeft !== null && timeLeft <= 10;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="min-h-screen p-6 md:p-10" style={{ background: "var(--bg)" }}>
+      <div className="max-w-3xl mx-auto">
 
-      <div className="max-w-3xl mx-auto p-6">
-
-        <div className="flex justify-between items-center mb-6">
-
-          <h1 className="text-3xl font-bold">
-            {quiz.title}
-          </h1>
-
-          <div className="bg-red-600 px-4 py-2 rounded-lg font-semibold">
-            {timeLeft}s
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-2xl font-extrabold" style={{ color: "var(--text)" }}>
+              {quiz.title}
+            </h1>
+            <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>
+              Question {currentQuestion + 1} of {quiz.questions.length}
+            </p>
           </div>
 
+          {timeLeft !== null && (
+            <div
+              className="px-4 py-2 rounded-xl font-bold font-mono text-sm"
+              style={{
+                background: timerWarning ? "rgba(239,68,68,0.15)" : "var(--surface)",
+                border: `1px solid ${timerWarning ? "rgba(239,68,68,0.4)" : "var(--border)"}`,
+                color: timerWarning ? "#f87171" : "var(--text)",
+              }}
+            >
+              {timeLeft}s
+            </div>
+          )}
         </div>
 
-        <div className="bg-gray-900 p-6 rounded-2xl border border-gray-800">
-
-          <h2 className="text-xl font-semibold mb-6">
-            Q{currentQuestion + 1}. {question.question_text}
+        <div
+          className="rounded-2xl p-6 mb-4"
+          style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+        >
+          <h2 className="text-lg font-semibold mb-6" style={{ color: "var(--text)" }}>
+            {currentQuestion + 1}. {question.question_text}
           </h2>
 
-          <div className="space-y-4">
-
-            {["a", "b", "c", "d"].map((key) => (
-
-              <button
-                key={key}
-                onClick={() =>
-                  handleOptionSelect(key)
-                }
-                className={`w-full text-left p-4 rounded-xl border transition
-                ${
-                  answers[currentQuestion] === key
-                    ? "bg-indigo-600 border-indigo-500"
-                    : "bg-gray-800 border-gray-700 hover:bg-gray-700"
-                }`}
-              >
-
-                {question[`option_${key}`]}
-
-              </button>
-
-            ))}
-
+          <div className="space-y-3">
+            {["a", "b", "c", "d"].map((key) => {
+              const selected = answers[currentQuestion] === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => handleOptionSelect(key)}
+                  className="w-full text-left p-4 rounded-xl transition-all duration-200"
+                  style={{
+                    background: selected ? "rgba(200,255,0,0.1)" : "var(--surface-hover)",
+                    border: `1px solid ${selected ? "var(--accent)" : "var(--border)"}`,
+                    color: selected ? "var(--accent)" : "var(--text)",
+                  }}
+                >
+                  <span className="font-semibold uppercase mr-3">{key}.</span>
+                  {question[`option_${key}`]}
+                </button>
+              );
+            })}
           </div>
-
-          <div className="flex justify-between mt-8">
-
-            <button
-              disabled={currentQuestion === 0}
-              onClick={() =>
-                setCurrentQuestion(currentQuestion - 1)
-              }
-              className="bg-gray-700 px-5 py-2 rounded-lg disabled:opacity-50"
-            >
-              Previous
-            </button>
-
-            {currentQuestion < quiz.questions.length - 1 ? (
-
-              <button
-                onClick={() =>
-                  setCurrentQuestion(currentQuestion + 1)
-                }
-                className="bg-indigo-600 px-5 py-2 rounded-lg"
-              >
-                Next
-              </button>
-
-            ) : (
-
-              <button
-                onClick={handleSubmit}
-                className="bg-green-600 px-5 py-2 rounded-lg"
-              >
-                Submit Quiz
-              </button>
-
-            )}
-
-          </div>
-
         </div>
 
-      </div>
+        <div className="flex justify-between mt-6">
+          <button
+            disabled={currentQuestion === 0}
+            onClick={() => setCurrentQuestion(currentQuestion - 1)}
+            className="px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 disabled:opacity-30"
+            style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)" }}
+          >
+            Previous
+          </button>
 
+          {isLast ? (
+            <button
+              onClick={handleSubmit}
+              disabled={submitting}
+              className="px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 hover:opacity-90 active:scale-95 disabled:opacity-50"
+              style={{ background: "var(--accent)", color: "var(--bg)" }}
+            >
+              {submitting ? "Submitting..." : "Submit Quiz"}
+            </button>
+          ) : (
+            <button
+              onClick={() => setCurrentQuestion(currentQuestion + 1)}
+              className="px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 hover:opacity-90 active:scale-95"
+              style={{ background: "var(--accent)", color: "var(--bg)" }}
+            >
+              Next
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

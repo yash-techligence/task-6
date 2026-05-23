@@ -13,7 +13,13 @@ export default function ScoreCard({ score, total, timeTaken, onDashboard }) {
   const grade = getGrade();
 
   return (
-    <div className="relative bg-black border border-white/10 rounded-3xl p-8 h-full flex flex-col overflow-hidden">
+    <div
+      className="relative rounded-3xl p-8 h-full flex flex-col overflow-hidden"
+      style={{
+        background: "var(--card-bg)",
+        border: "1px solid var(--border)",
+      }}
+    >
       <div
         className="absolute -top-10 -right-10 w-48 h-48 rounded-full opacity-5"
         style={{ background: "var(--accent)" }}
@@ -26,20 +32,36 @@ export default function ScoreCard({ score, total, timeTaken, onDashboard }) {
         >
           Quiz Complete
         </span>
-        <h2 className="text-4xl font-extrabold text-white mt-1">
+        <h2
+          className="text-4xl font-extrabold mt-1"
+          style={{ color: "var(--text)" }}
+        >
           {grade.label}
         </h2>
-        <p className="text-white/60 text-sm mt-1">{grade.sub}</p>
+        <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>
+          {grade.sub}
+        </p>
       </div>
 
       <div className="flex items-end gap-3 mb-6">
-        <span className="text-9xl font-extrabold leading-none text-white">
+        <span
+          className="text-9xl font-extrabold leading-none"
+          style={{ color: "var(--text)" }}
+        >
           {score}
         </span>
-        <span className="text-4xl font-bold text-white/60 mb-3">/ {total}</span>
+        <span
+          className="text-4xl font-bold mb-3"
+          style={{ color: "var(--text-muted)" }}
+        >
+          / {total}
+        </span>
       </div>
 
-      <div className="w-full bg-white/5 rounded-full h-1.5 mb-8">
+      <div
+        className="w-full rounded-full h-1.5 mb-8"
+        style={{ background: "var(--surface)" }}
+      >
         <div
           className="h-1.5 rounded-full transition-all duration-1000"
           style={{ width: `${percentage}%`, background: "var(--accent)" }}
@@ -47,20 +69,24 @@ export default function ScoreCard({ score, total, timeTaken, onDashboard }) {
       </div>
 
       <div className="grid grid-cols-3 gap-3 mb-8">
-        <div className="bg-white/5 rounded-2xl p-4 text-center">
-          <p className="text-2xl font-bold text-white">{percentage}%</p>
-          <p className="text-white/60 text-xs mt-1">Accuracy</p>
-        </div>
-        <div className="bg-white/5 rounded-2xl p-4 text-center">
-          <p className="text-2xl font-bold" style={{ color: "var(--accent)" }}>
-            {score}
-          </p>
-          <p className="text-white/60 text-xs mt-1">Correct</p>
-        </div>
-        <div className="bg-white/5 rounded-2xl p-4 text-center">
-          <p className="text-2xl font-bold text-red-400">{total - score}</p>
-          <p className="text-white/60 text-xs mt-1">Wrong</p>
-        </div>
+        {[
+          { value: `${percentage}%`, label: "Accuracy", color: "var(--text)" },
+          { value: score, label: "Correct", color: "var(--accent)" },
+          { value: total - score, label: "Wrong", color: "#f87171" },
+        ].map((stat, i) => (
+          <div
+            key={i}
+            className="rounded-2xl p-4 text-center"
+            style={{ background: "var(--surface)" }}
+          >
+            <p className="text-2xl font-bold" style={{ color: stat.color }}>
+              {stat.value}
+            </p>
+            <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
+              {stat.label}
+            </p>
+          </div>
+        ))}
       </div>
 
       <div className="flex items-center gap-2 mb-8">
@@ -71,18 +97,31 @@ export default function ScoreCard({ score, total, timeTaken, onDashboard }) {
           fill="none"
           stroke="currentColor"
           strokeWidth="2"
-          className="text-white/30"
+          style={{ color: "var(--text-faint)" }}
         >
           <circle cx="12" cy="12" r="10" />
           <polyline points="12 6 12 12 16 14" />
         </svg>
-        <span className="text-white/40 text-sm">{timeTaken} seconds taken</span>
+        <span className="text-sm" style={{ color: "var(--text-muted)" }}>
+          {timeTaken} seconds taken
+        </span>
       </div>
 
       <div className="mt-auto">
         <button
           onClick={onDashboard}
-          className="w-full py-3.5 rounded-2xl font-bold text-white text-sm tracking-wide bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 active:scale-95"
+          className="w-full py-3.5 rounded-2xl font-bold text-sm tracking-wide transition-all duration-200 active:scale-95"
+          style={{
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            color: "var(--text)",
+          }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.background = "var(--surface-hover)")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.background = "var(--surface)")
+          }
         >
           Back to Dashboard
         </button>

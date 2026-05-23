@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const db = require("./db/db");
 const verifyToken = require("./middleware/authMiddleware");
+const quizRoutes = require("./routes/quiz");
 
 const app = express();
 
@@ -145,6 +146,10 @@ app.post("/login", (req, res) => {
   );
 
 });
+
+/* QUIZ ROUTES */
+
+app.use("/quiz", quizRoutes);
 
 /* PROTECTED ROUTE */
 

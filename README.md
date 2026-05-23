@@ -46,14 +46,6 @@
 | option_d | VARCHAR(255) | Not Null |
 | correct_option | CHAR(1) | a, b, c or d |
 
-### `results` *(upcoming — Vaishnavi)*
-| Column | Type | Notes |
-|--------|------|-------|
-| id | INT | PK, Auto Increment |
-| user_id | INT | FK → users.id |
-| quiz_id | INT | FK → quizzes.id |
-| score | INT | |
-| submitted_at | TIMESTAMP | Default: current time |
 
 ## 🔄 In Progress
 

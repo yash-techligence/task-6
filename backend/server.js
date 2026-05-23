@@ -22,18 +22,18 @@ app.get("/", (req, res) => {
 
 app.post("/register", async (req, res) => {
 
-  const { name, email, password } = req.body;
+  const { username, email, password } = req.body;
 
   try {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const sql =
-      "INSERT INTO users (name, email, password) VALUES (?, ?, ?)";
+      "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
 
     db.query(
       sql,
-      [name, email, hashedPassword],
+      [username, email, hashedPassword],
       (err, result) => {
 
         if (err) {

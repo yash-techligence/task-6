@@ -5,11 +5,12 @@ const jwt = require("jsonwebtoken");
 const db = require("./db/db");
 const verifyToken = require("./middleware/authMiddleware");
 const quizRoutes = require("./routes/quiz");
-
+const resultsRoutes = require("./routes/results");
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use("/results", resultsRoutes);
 
 /* HOME */
 

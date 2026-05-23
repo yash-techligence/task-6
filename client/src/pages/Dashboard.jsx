@@ -60,10 +60,10 @@ export default function Dashboard() {
         )
       : 0;
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) navigate("/login");
-  }, []);
+  // useEffect(() => {
+  //   const token = localStorage.getItem("token");
+  //   if (!token) navigate("/login");
+  // }, []);
 
   return (
     <div className="min-h-screen p-6 md:p-10" style={{ background: "#080808" }}>

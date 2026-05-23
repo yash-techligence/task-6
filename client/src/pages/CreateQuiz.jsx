@@ -1,343 +1,273 @@
 import { useState } from "react";
-import API from "../api/axios";
-import Navbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
 
+const BASE_URL = "http://localhost:5000";
 
 export default function CreateQuiz() {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
-
   const [quizId, setQuizId] = useState(null);
-
   const [questions, setQuestions] = useState([]);
-
   const [questionData, setQuestionData] = useState({
     question: "",
-    option_a: "",
-    option_b: "",
-    option_c: "",
-    option_d: "",
-    correct_answer: "a"
+    option1: "",
+    option2: "",
+    option3: "",
+    option4: "",
+    answer: "a",
   });
-
   const [loading, setLoading] = useState(false);
 
   async function createQuiz() {
-
     if (!title.trim()) {
       alert("Please enter quiz title");
       return;
     }
-
     try {
-
       setLoading(true);
-
-      const res = await API.post("/quiz/create", {
-        title
+      const res = await fetch(`${BASE_URL}/quiz/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ title }),
       });
-
-      if (res.data.success) {
-
-        setQuizId(res.data.quiz_id);
-
+      const data = await res.json();
+      if (data.success) {
+        setQuizId(data.quiz_id);
         alert("Quiz Created Successfully");
-
+      } else {
+        alert(data.message || "Failed to create quiz");
       }
-
     } catch (err) {
-
       console.log(err);
-
       alert("Failed to create quiz");
-
     } finally {
-
       setLoading(false);
-
     }
-
   }
 
   async function addQuestion() {
-
     if (
       !questionData.question ||
-      !questionData.option_a ||
-      !questionData.option_b ||
-      !questionData.option_c ||
-      !questionData.option_d
+      !questionData.option1 ||
+      !questionData.option2 ||
+      !questionData.option3 ||
+      !questionData.option4
     ) {
       alert("Please fill all fields");
       return;
     }
-
     try {
-
       setLoading(true);
-
-      const res = await API.post("/quiz/add-question", {
-        quiz_id: quizId,
-        ...questionData
+      const res = await fetch(`${BASE_URL}/quiz/add-question`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ quiz_id: quizId, ...questionData }),
       });
-
-      if (res.data.success) {
-
+      const data = await res.json();
+      if (data.success) {
         setQuestions([...questions, questionData]);
-
         alert("Question Added Successfully");
-
         setQuestionData({
           question: "",
-          option_a: "",
-          option_b: "",
-          option_c: "",
-          option_d: "",
-          correct_answer: "a"
+          option1: "",
+          option2: "",
+          option3: "",
+          option4: "",
+          answer: "a",
         });
-
+      } else {
+        alert(data.message || "Failed to add question");
       }
-
     } catch (err) {
-
       console.log(err);
-
       alert("Failed to add question");
-
     } finally {
-
       setLoading(false);
-
     }
-
   }
 
   function finishQuiz() {
-  alert(`Quiz created successfully with ${questions.length} questions`);
-  navigate("/dashboard");
-
+    alert(`Quiz created successfully with ${questions.length} questions`);
+    navigate("/dashboard");
   }
 
+  const inputStyle = {
+    background: "var(--surface)",
+    border: "1px solid var(--border)",
+    color: "var(--text)",
+  };
+
   return (
-
-    <div className="min-h-screen bg-gray-950 text-white">
-
-      <div className="max-w-3xl mx-auto p-6">
-
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8">
-
-          <h1 className="text-3xl font-bold mb-6">
+    <div
+      className="min-h-screen px-4 py-10"
+      style={{ background: "var(--bg)" }}
+    >
+      <div className="max-w-3xl mx-auto">
+        <div
+          className="rounded-2xl p-8"
+          style={{
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+          }}
+        >
+          <h1
+            className="text-3xl font-bold mb-6"
+            style={{ color: "var(--text)" }}
+          >
             Create Quiz
           </h1>
 
           {!quizId ? (
-
             <div className="space-y-4">
-
               <div>
-
-                <label className="block text-sm text-gray-300 mb-2">
+                <label
+                  className="block text-sm font-medium mb-2"
+                  style={{ color: "var(--text-muted)" }}
+                >
                   Quiz Title
                 </label>
-
                 <input
                   type="text"
                   placeholder="Enter quiz title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 focus:outline-none focus:border-indigo-500"
+                  className="w-full rounded-xl px-4 py-2.5 text-sm focus:outline-none transition"
+                  style={inputStyle}
                 />
-
               </div>
-
               <button
                 onClick={createQuiz}
                 disabled={loading}
-                className="bg-indigo-600 hover:bg-indigo-500 px-5 py-3 rounded-lg font-semibold transition"
+                className="font-semibold rounded-xl px-5 py-2.5 text-sm transition-all duration-200 hover:opacity-90 active:scale-95 disabled:opacity-50"
+                style={{ background: "var(--accent)", color: "var(--bg)" }}
               >
                 {loading ? "Creating..." : "Create Quiz"}
               </button>
-
             </div>
-
           ) : (
-
             <div>
-
               <div className="flex items-center justify-between mb-6">
-
-                <h2 className="text-2xl font-semibold">
+                <h2
+                  className="text-2xl font-semibold"
+                  style={{ color: "var(--text)" }}
+                >
                   Add Questions
                 </h2>
-
-                <span className="bg-gray-800 px-4 py-2 rounded-lg text-sm">
+                <span
+                  className="px-4 py-2 rounded-lg text-sm"
+                  style={{
+                    background: "var(--surface)",
+                    color: "var(--text-muted)",
+                    border: "1px solid var(--border)",
+                  }}
+                >
                   Questions Added: {questions.length}
                 </span>
-
               </div>
 
               <div className="space-y-4">
-
                 <div>
-
-                  <label className="block text-sm text-gray-300 mb-2">
+                  <label
+                    className="block text-sm font-medium mb-2"
+                    style={{ color: "var(--text-muted)" }}
+                  >
                     Question
                   </label>
-
                   <textarea
                     placeholder="Enter question"
                     value={questionData.question}
                     onChange={(e) =>
                       setQuestionData({
                         ...questionData,
-                        question: e.target.value
+                        question: e.target.value,
                       })
                     }
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 focus:outline-none focus:border-indigo-500"
+                    className="w-full rounded-xl px-4 py-2.5 text-sm focus:outline-none transition"
+                    style={inputStyle}
                   />
-
                 </div>
 
-                <div>
-
-                  <label className="block text-sm text-gray-300 mb-2">
-                    Option A
-                  </label>
-
-                  <input
-                    type="text"
-                    placeholder="Option A"
-                    value={questionData.option_a}
-                    onChange={(e) =>
-                      setQuestionData({
-                        ...questionData,
-                        option_a: e.target.value
-                      })
-                    }
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 focus:outline-none focus:border-indigo-500"
-                  />
-
-                </div>
-
-                <div>
-
-                  <label className="block text-sm text-gray-300 mb-2">
-                    Option B
-                  </label>
-
-                  <input
-                    type="text"
-                    placeholder="Option B"
-                    value={questionData.option_b}
-                    onChange={(e) =>
-                      setQuestionData({
-                        ...questionData,
-                        option_b: e.target.value
-                      })
-                    }
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 focus:outline-none focus:border-indigo-500"
-                  />
-
-                </div>
+                {[1, 2, 3, 4].map((num) => (
+                  <div key={num}>
+                    <label
+                      className="block text-sm font-medium mb-2"
+                      style={{ color: "var(--text-muted)" }}
+                    >
+                      Option {num}
+                    </label>
+                    <input
+                      type="text"
+                      placeholder={`Option ${num}`}
+                      value={questionData[`option${num}`]}
+                      onChange={(e) =>
+                        setQuestionData({
+                          ...questionData,
+                          [`option${num}`]: e.target.value,
+                        })
+                      }
+                      className="w-full rounded-xl px-4 py-2.5 text-sm focus:outline-none transition"
+                      style={inputStyle}
+                    />
+                  </div>
+                ))}
 
                 <div>
-
-                  <label className="block text-sm text-gray-300 mb-2">
-                    Option C
-                  </label>
-
-                  <input
-                    type="text"
-                    placeholder="Option C"
-                    value={questionData.option_c}
-                    onChange={(e) =>
-                      setQuestionData({
-                        ...questionData,
-                        option_c: e.target.value
-                      })
-                    }
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 focus:outline-none focus:border-indigo-500"
-                  />
-
-                </div>
-
-                <div>
-
-                  <label className="block text-sm text-gray-300 mb-2">
-                    Option D
-                  </label>
-
-                  <input
-                    type="text"
-                    placeholder="Option D"
-                    value={questionData.option_d}
-                    onChange={(e) =>
-                      setQuestionData({
-                        ...questionData,
-                        option_d: e.target.value
-                      })
-                    }
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 focus:outline-none focus:border-indigo-500"
-                  />
-
-                </div>
-
-                <div>
-
-                  <label className="block text-sm text-gray-300 mb-2">
+                  <label
+                    className="block text-sm font-medium mb-2"
+                    style={{ color: "var(--text-muted)" }}
+                  >
                     Select Correct Answer
                   </label>
-
                   <select
-                    value={questionData.correct_answer}
+                    value={questionData.answer}
                     onChange={(e) =>
                       setQuestionData({
                         ...questionData,
-                        correct_answer: e.target.value
+                        answer: e.target.value,
                       })
                     }
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 focus:outline-none focus:border-indigo-500"
+                    className="w-full rounded-xl px-4 py-2.5 text-sm focus:outline-none transition"
+                    style={inputStyle}
                   >
-                    <option value="a">Option A</option>
-                    <option value="b">Option B</option>
-                    <option value="c">Option C</option>
-                    <option value="d">Option D</option>
+                    <option value="a">Option 1</option>
+                    <option value="b">Option 2</option>
+                    <option value="c">Option 3</option>
+                    <option value="d">Option 4</option>
                   </select>
-
                 </div>
 
                 <div className="flex gap-4 pt-4">
-
                   <button
                     onClick={addQuestion}
                     disabled={loading}
-                    className="bg-green-600 hover:bg-green-500 px-5 py-3 rounded-lg font-semibold transition"
+                    className="font-semibold rounded-xl px-5 py-2.5 text-sm transition-all duration-200 hover:opacity-90 active:scale-95 disabled:opacity-50"
+                    style={{ background: "var(--accent)", color: "var(--bg)" }}
                   >
                     {loading ? "Adding..." : "Add Question"}
                   </button>
-
                   <button
                     onClick={finishQuiz}
-                    className="bg-indigo-600 hover:bg-indigo-500 px-5 py-3 rounded-lg font-semibold transition"
+                    className="font-semibold rounded-xl px-5 py-2.5 text-sm transition-all duration-200 hover:opacity-90 active:scale-95"
+                    style={{
+                      background: "var(--surface)",
+                      color: "var(--text)",
+                      border: "1px solid var(--border)",
+                    }}
                   >
                     Finish Quiz
                   </button>
-
                 </div>
-
               </div>
-
             </div>
-
           )}
-
         </div>
-
       </div>
-
     </div>
-
   );
-
 }

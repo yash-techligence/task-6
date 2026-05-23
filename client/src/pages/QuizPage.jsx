@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { fetchQuizzes, submitQuiz } from "../api";
+import { fetchQuiz, submitQuiz } from "../api";
 
 export default function QuizPage() {
   const { id } = useParams();
@@ -12,42 +12,42 @@ export default function QuizPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(null);
-  const [startTime] = useState(Date.now());
+
+  const startTime = useRef(null);
+  const submittingRef = useRef(false);
+  const quizRef = useRef(null);
+  const answersRef = useRef({});
+  const timerStarted = useRef(false);
 
   useEffect(() => {
-    fetchQuizzes()
-      .then((quizzes) => {
-        const found = quizzes.find((q) => q.id === Number(id));
-        setQuiz(found ?? null);
-        if (found?.timeLimit) setTimeLeft(found.timeLimit);
+    startTime.current = Date.now();
+  }, []);
+
+  useEffect(() => {
+    fetchQuiz(id)
+      .then((q) => {
+        setQuiz(q);
+        quizRef.current = q;
+        if (q?.timeLimit) setTimeLeft(q.timeLimit);
       })
       .catch(() => setQuiz(null))
       .finally(() => setLoading(false));
   }, [id]);
 
-  useEffect(() => {
-    if (timeLeft === null || timeLeft <= 0) {
-      if (timeLeft === 0) handleSubmit();
-      return;
-    }
-    const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
-    return () => clearInterval(timer);
-  }, [timeLeft]);
-
-  async function handleSubmit() {
-    if (submitting || !quiz) return;
+  const handleSubmit = useCallback(async () => {
+    if (submittingRef.current || !quizRef.current) return;
+    submittingRef.current = true;
     setSubmitting(true);
 
-    const timeTaken = Math.round((Date.now() - startTime) / 1000);
-
-    const allQuestions = quiz.questions ?? [];
+    const timeTaken = Math.round((Date.now() - startTime.current) / 1000);
+    const allQuestions = quizRef.current.questions ?? [];
     const score = allQuestions.reduce((acc, q, i) => {
-      return answers[i] === q.correct_answer ? acc + 1 : acc;
+      return answersRef.current[i] === q.correct_answer ? acc + 1 : acc;
     }, 0);
 
     try {
       await submitQuiz({
-        quizId: quiz.id,
+        quizId: quizRef.current.id,
         score,
         totalQuestions: allQuestions.length,
         timeTaken,
@@ -56,18 +56,41 @@ export default function QuizPage() {
       console.error("Failed to save result");
     }
 
-    navigate(`/result/${quiz.id}`, {
+    navigate(`/result/${quizRef.current.id}`, {
       state: { score, total: allQuestions.length, timeTaken },
     });
-  }
+  }, [navigate]);
+
+  useEffect(() => {
+    answersRef.current = answers;
+  }, [answers]);
+
+  useEffect(() => {
+    if (timeLeft === null || timerStarted.current) return;
+    timerStarted.current = true;
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          handleSubmit();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [timeLeft, handleSubmit]);
 
   function handleOptionSelect(option) {
-    setAnswers({ ...answers, [currentQuestion]: option });
+    setAnswers((prev) => ({ ...prev, [currentQuestion]: option }));
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg)" }}>
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: "var(--bg)" }}
+      >
         <p style={{ color: "var(--text-muted)" }}>Loading quiz...</p>
       </div>
     );
@@ -75,7 +98,10 @@ export default function QuizPage() {
 
   if (!quiz) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg)" }}>
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: "var(--bg)" }}
+      >
         <p style={{ color: "var(--text-muted)" }}>Quiz not found.</p>
       </div>
     );
@@ -83,8 +109,13 @@ export default function QuizPage() {
 
   if (!quiz.questions?.length) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg)" }}>
-        <p style={{ color: "var(--text-muted)" }}>No questions found for this quiz.</p>
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: "var(--bg)" }}
+      >
+        <p style={{ color: "var(--text-muted)" }}>
+          No questions found for this quiz.
+        </p>
       </div>
     );
   }
@@ -94,12 +125,17 @@ export default function QuizPage() {
   const timerWarning = timeLeft !== null && timeLeft <= 10;
 
   return (
-    <div className="min-h-screen p-6 md:p-10" style={{ background: "var(--bg)" }}>
+    <div
+      className="min-h-screen p-6 md:p-10"
+      style={{ background: "var(--bg)" }}
+    >
       <div className="max-w-3xl mx-auto">
-
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-2xl font-extrabold" style={{ color: "var(--text)" }}>
+            <h1
+              className="text-2xl font-extrabold"
+              style={{ color: "var(--text)" }}
+            >
               {quiz.title}
             </h1>
             <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>
@@ -111,7 +147,9 @@ export default function QuizPage() {
             <div
               className="px-4 py-2 rounded-xl font-bold font-mono text-sm"
               style={{
-                background: timerWarning ? "rgba(239,68,68,0.15)" : "var(--surface)",
+                background: timerWarning
+                  ? "rgba(239,68,68,0.15)"
+                  : "var(--surface)",
                 border: `1px solid ${timerWarning ? "rgba(239,68,68,0.4)" : "var(--border)"}`,
                 color: timerWarning ? "#f87171" : "var(--text)",
               }}
@@ -123,10 +161,16 @@ export default function QuizPage() {
 
         <div
           className="rounded-2xl p-6 mb-4"
-          style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+          style={{
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+          }}
         >
-          <h2 className="text-lg font-semibold mb-6" style={{ color: "var(--text)" }}>
-            {currentQuestion + 1}. {question.question_text}
+          <h2
+            className="text-lg font-semibold mb-6"
+            style={{ color: "var(--text)" }}
+          >
+            {currentQuestion + 1}. {question.question}
           </h2>
 
           <div className="space-y-3">
@@ -138,7 +182,9 @@ export default function QuizPage() {
                   onClick={() => handleOptionSelect(key)}
                   className="w-full text-left p-4 rounded-xl transition-all duration-200"
                   style={{
-                    background: selected ? "rgba(200,255,0,0.1)" : "var(--surface-hover)",
+                    background: selected
+                      ? "rgba(200,255,0,0.1)"
+                      : "var(--surface-hover)",
                     border: `1px solid ${selected ? "var(--accent)" : "var(--border)"}`,
                     color: selected ? "var(--accent)" : "var(--text)",
                   }}
@@ -156,7 +202,11 @@ export default function QuizPage() {
             disabled={currentQuestion === 0}
             onClick={() => setCurrentQuestion(currentQuestion - 1)}
             className="px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 disabled:opacity-30"
-            style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)" }}
+            style={{
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
+              color: "var(--text)",
+            }}
           >
             Previous
           </button>

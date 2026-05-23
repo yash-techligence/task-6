@@ -2,11 +2,11 @@ const BASE_URL = "http://localhost:5000";
 
 const getToken = () => localStorage.getItem("token");
 
-export const registerUser = async ({ name, email, password }) => {
+export const registerUser = async ({ username, email, password }) => {
   const response = await fetch(`${BASE_URL}/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, email, password }),
+    body: JSON.stringify({ username, email, password }),
   });
   return response.json();
 };
@@ -36,18 +36,46 @@ export const fetchQuizzes = async () => {
     description: quiz.description ?? `${quiz.questions?.length ?? 0} questions`,
     totalQuestions: quiz.total_questions ?? quiz.questions?.length ?? 0,
     timeLimit: quiz.time_limit ?? null,
+    questions: (quiz.questions ?? []).map((q) => ({
+      id: q.id,
+      question: q.question,
+      option_a: q.option1,
+      option_b: q.option2,
+      option_c: q.option3,
+      option_d: q.option4,
+      correct_answer: q.correct_option,
+    })),
   }));
 };
 
 export const fetchQuiz = async (quizId) => {
-  const response = await fetch(`${BASE_URL}/quiz/${quizId}`, {
+  const response = await fetch(`${BASE_URL}/quiz`, {
     headers: { Authorization: `Bearer ${getToken()}` },
   });
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
     throw new Error(err.message || "Failed to fetch quiz");
   }
-  return response.json();
+  const data = await response.json();
+  const quizzes = (data.quizzes ?? []).map((quiz) => ({
+    id: quiz.id,
+    title: quiz.title,
+    description: quiz.description ?? "",
+    totalQuestions: quiz.total_questions ?? quiz.questions?.length ?? 0,
+    timeLimit: quiz.time_limit ?? null,
+    questions: (quiz.questions ?? []).map((q) => ({
+      id: q.id,
+      question: q.question,
+      option_a: q.option1,
+      option_b: q.option2,
+      option_c: q.option3,
+      option_d: q.option4,
+      correct_answer: q.correct_option,
+    })),
+  }));
+  const found = quizzes.find((q) => q.id === Number(quizId));
+  if (!found) throw new Error("Quiz not found");
+  return found;
 };
 
 export const submitQuiz = async ({

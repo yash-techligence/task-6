@@ -25,14 +25,28 @@ export default function Dashboard() {
   useEffect(() => {
     Promise.all([fetchQuizzes(), fetchResults()])
       .then(([allQuizzes, results]) => {
-        // quizzes the user has already attempted
-        const attemptedIds = new Set(results.map((r) => r.quizId));
+        // Single pass — separate into available and attempted
+        const { available, attempted } = allQuizzes.reduce(
+          (acc, quiz) => {
+            const result = results.find((r) => r.quizId === quiz.id);
+            if (result) {
+              acc.attempted.push({
+                ...quiz,
+                resultId: result.id,
+                score: result.score,
+                timeTaken: result.timeTaken,
+                submittedAt: result.submittedAt,
+              });
+            } else {
+              acc.available.push(quiz);
+            }
+            return acc;
+          },
+          { available: [], attempted: [] },
+        );
 
-        // available = all quizzes minus attempted ones
-        setAvailable(allQuizzes.filter((q) => !attemptedIds.has(q.id)));
-
-        // attempted = results data (already has score, timeTaken etc.)
-        setAttempted(results);
+        setAvailable(available);
+        setAttempted(attempted);
       })
       .catch(() => setError("Could not load dashboard data."))
       .finally(() => setLoading(false));

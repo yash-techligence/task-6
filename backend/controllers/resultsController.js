@@ -2,11 +2,15 @@ const db = require("../db/db");
 
 const getResults = (req, res) => {
 
+  const userId = req.user.id;
+
   const sql = `
     SELECT * FROM results
+    WHERE user_id = ?
+    ORDER BY id DESC
   `;
 
-  db.query(sql, (err, result) => {
+  db.query(sql, [userId], (err, result) => {
 
     if (err) {
 

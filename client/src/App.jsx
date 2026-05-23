@@ -1,19 +1,49 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import ResultPage from "./pages/ResultPage";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import Navbar from "./components/Navbar";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import QuizPage from "./pages/QuizPage";
+import CreateQuiz from "./pages/CreateQuiz";
+import Quizzes from "./pages/Quizzes";
+
+const ProtectedRoute = ({ children }) => {
+  const { user } = useAuth();
+  return user ? children : <Navigate to="/login" />;
+};
+
+const AppRoutes = () => {
+  return (
+    <>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Navigate to="/dashboard" />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/quiz/:id" element={<QuizPage />} />
+        <Route path="/create-quiz" element={<CreateQuiz />} />
+        <Route path="/quizzes" element={<Quizzes />} />
+
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </>
+  );
+};
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/result/:quizId" element={<ResultPage />} />
-
-        {/* Teammates will add their routes here */}
-        {/* <Route path="/quiz/:quizId" element={<QuizPage />} /> */}
-        {/* <Route path="/login" element={<Login />} /> */}
-        {/* <Route path="/register" element={<Register />} /> */}
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </AuthProvider>
   );
 }

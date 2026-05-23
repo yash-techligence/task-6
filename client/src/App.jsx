@@ -4,6 +4,9 @@ import Navbar from "./components/Navbar";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import QuizPage from "./pages/QuizPage";
+import CreateQuiz from "./pages/CreateQuiz";
+import Quizzes from "./pages/Quizzes";
 
 const ProtectedRoute = ({ children }) => {
   const { user } = useAuth();
@@ -18,6 +21,10 @@ const AppRoutes = () => {
         <Route path="/" element={<Navigate to="/dashboard" />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/quiz/:id" element={<QuizPage />} />
+        <Route path="/create-quiz" element={<CreateQuiz />} />
+        <Route path="/quizzes" element={<Quizzes />} />
+
         <Route
           path="/dashboard"
           element={

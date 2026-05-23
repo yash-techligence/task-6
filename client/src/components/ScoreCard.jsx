@@ -1,4 +1,4 @@
-export default function ScoreCard({ score, total, timeTaken, onRetry, onDashboard }) {
+export default function ScoreCard({ score, total, timeTaken, onDashboard }) {
   const percentage = Math.round((score / total) * 100);
 
   const getGrade = () => {
@@ -79,19 +79,12 @@ export default function ScoreCard({ score, total, timeTaken, onRetry, onDashboar
         <span className="text-white/40 text-sm">{timeTaken} seconds taken</span>
       </div>
 
-      <div className="flex gap-3 mt-auto">
-        <button
-          onClick={onRetry}
-          className="flex-1 py-3.5 rounded-2xl font-bold text-black text-sm tracking-wide transition-all duration-200 hover:opacity-90 active:scale-95"
-          style={{ background: "var(--accent)" }}
-        >
-          Retry Quiz
-        </button>
+      <div className="mt-auto">
         <button
           onClick={onDashboard}
-          className="flex-1 py-3.5 rounded-2xl font-bold text-white text-sm tracking-wide bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 active:scale-95"
+          className="w-full py-3.5 rounded-2xl font-bold text-white text-sm tracking-wide bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 active:scale-95"
         >
-          Dashboard
+          Back to Dashboard
         </button>
       </div>
     </div>

@@ -1,44 +1,108 @@
-// const BASE_URL = "http://localhost:5000";
+const BASE_URL = "http://localhost:5000";
 
-// const getToken = () => localStorage.getItem("token");
+const getToken = () => localStorage.getItem("token");
 
-export const submitQuiz = async (quizId) => {
-  // MOCK — remove when backend is ready
-  return {
-    quizId: quizId,
-    score: 7,
-    total: 10,
-    timeTaken: 45,
-  };
+// ─── AUTH ────────────────────────────────────────────────────────────────────
 
-  // REAL — uncomment when backend is ready
-  // const response = await fetch(`${BASE_URL}/submit`, {
-  //   method: "POST",
-  //   headers: {
-  //     "Content-Type": "application/json",
-  //     "Authorization": `Bearer ${getToken()}`
-  //   },
-  //   body: JSON.stringify({ quizId, answers })
-  // });
-  // if (!response.ok) throw new Error("Submit failed");
-  // return response.json();
+export const registerUser = async ({ name, email, password }) => {
+  const response = await fetch(`${BASE_URL}/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, email, password }),
+  });
+  if (!response.ok) throw new Error("Registration failed");
+  return response.json(); // { success, message }
 };
 
-// GET /leaderboard?quizId=123
-export const fetchLeaderboard = async () => {
-  // MOCK — remove when backend is ready
-  return [
-    { rank: 1, username: "Rahul", score: 10, timeTaken: 30 },
-    { rank: 2, username: "Priya", score: 8, timeTaken: 35 },
-    { rank: 3, username: "You", score: 7, timeTaken: 45 },
-    { rank: 4, username: "Amit", score: 6, timeTaken: 50 },
-    { rank: 5, username: "Sara", score: 5, timeTaken: 60 },
-  ];
+export const loginUser = async ({ email, password }) => {
+  const response = await fetch(`${BASE_URL}/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  if (!response.ok) throw new Error("Login failed");
+  return response.json(); // { success, message, token }
+};
 
-  // REAL — uncomment when backend is ready
-  // const response = await fetch(`${BASE_URL}/leaderboard?quizId=${quizId}`, {
-  //   headers: { "Authorization": `Bearer ${getToken()}` }
-  // });
-  // if (!response.ok) throw new Error("Failed to fetch leaderboard");
-  // return response.json();
+// ─── QUIZZES ──────────────────────────────────────────────────────────────────
+
+// GET /quiz
+// Response: { success, quizzes: [ { id, title, description, total_questions, time_limit, questions: [...] } ] }
+// Requires backend to SELECT description, total_questions, time_limit in the query
+export const fetchQuizzes = async () => {
+  const response = await fetch(`${BASE_URL}/quiz`, {
+    headers: { Authorization: `Bearer ${getToken()}` },
+  });
+  if (!response.ok) throw new Error("Failed to fetch quizzes");
+  const data = await response.json();
+
+  return (data.quizzes ?? []).map((quiz) => ({
+    id: quiz.id,
+    title: quiz.title,
+    description: quiz.description ?? `${quiz.questions.length} questions`,
+    totalQuestions: quiz.total_questions ?? quiz.questions.length,
+    timeLimit: quiz.time_limit ?? null,
+  }));
+};
+
+export const fetchQuiz = async (quizId) => {
+  const response = await fetch(`${BASE_URL}/quiz/${quizId}`, {
+    headers: { Authorization: `Bearer ${getToken()}` },
+  });
+  if (!response.ok) throw new Error("Failed to fetch quiz");
+  return response.json();
+};
+
+// ─── SUBMIT ───────────────────────────────────────────────────────────────────
+
+// POST /submit
+// Backend expects: { quiz_id, score, total_questions, time_taken }
+// Backend returns: { message: "Quiz result saved successfully" }
+// NOTE: score & total_questions are calculated on the frontend quiz page
+export const submitQuiz = async ({
+  quizId,
+  score,
+  totalQuestions,
+  timeTaken,
+}) => {
+  const response = await fetch(`${BASE_URL}/submit`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getToken()}`,
+    },
+    body: JSON.stringify({
+      quiz_id: quizId,
+      score,
+      total_questions: totalQuestions,
+      time_taken: timeTaken,
+    }),
+  });
+  if (!response.ok) throw new Error("Submit failed");
+  return response.json(); // { message: "Quiz result saved successfully" }
+};
+
+// ─── LEADERBOARD ──────────────────────────────────────────────────────────────
+
+// GET /leaderboard?quiz_id=<quizId>
+// Response: { leaderboard: [ { username, best_score, total_questions, time_taken }, ... ] }
+export const fetchLeaderboard = async (quizId) => {
+  const url = quizId
+    ? `${BASE_URL}/leaderboard?quiz_id=${quizId}`
+    : `${BASE_URL}/leaderboard`;
+
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${getToken()}` },
+  });
+  if (!response.ok) throw new Error("Failed to fetch leaderboard");
+
+  const data = await response.json();
+
+  return (data.leaderboard ?? []).map((entry, index) => ({
+    rank: index + 1,
+    username: entry.username,
+    score: entry.best_score, // backend key is best_score
+    total: entry.total_questions, // backend key is total_questions
+    timeTaken: entry.time_taken, // backend key is time_taken
+  }));
 };

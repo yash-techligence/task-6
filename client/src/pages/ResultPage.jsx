@@ -14,9 +14,9 @@ export default function ResultPage() {
   const [error, setError] = useState(null);
 
   const currentUser = localStorage.getItem("username");
-  const score = state?.score ?? 7;
-  const total = state?.total ?? 10;
-  const timeTaken = state?.timeTaken ?? 45;
+  const score = state?.score ?? 0;
+  const total = state?.total ?? 0;
+  const timeTaken = state?.timeTaken ?? 0;
 
   useEffect(() => {
     fetchLeaderboard(quizId)
@@ -55,8 +55,8 @@ export default function ResultPage() {
           score={score}
           total={total}
           timeTaken={timeTaken}
-          onRetry={() => navigate(`/quiz/${quizId}`)}
           onDashboard={() => navigate("/dashboard")}
+          // onRetry removed — retaking a quiz is not supported
         />
         <QuizLeaderboard
           leaderboard={leaderboard}

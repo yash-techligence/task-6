@@ -133,6 +133,9 @@ router.get("/", verifyToken, (req, res) => {
     SELECT
       q.id AS quiz_id,
       q.title,
+      q.description,
+      q.total_questions,
+      q.time_limit,
       qs.id AS question_id,
       qs.question_text,
       qs.option_a,
@@ -167,6 +170,9 @@ router.get("/", verifyToken, (req, res) => {
           quizzes[row.quiz_id] = {
             id: row.quiz_id,
             title: row.title,
+            description: row.description,
+            total_questions: row.total_questions,
+            time_limit: row.time_limit,
             questions: []
           };
 

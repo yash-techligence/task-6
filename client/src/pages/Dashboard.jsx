@@ -1,28 +1,52 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchQuizzes } from "../api";
+import { Sun, Moon } from "lucide-react";
+import { fetchQuizzes, fetchResults } from "../api";
+import { useTheme } from "../context/useTheme";
 import QuizCard from "../components/QuizCard";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
+
   const [available, setAvailable] = useState([]);
+  const [attempted, setAttempted] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const username = localStorage.getItem("username") ?? "User";
   const isAdmin = localStorage.getItem("role") === "admin";
 
-  // useEffect(() => {
-  //   const token = localStorage.getItem("token");
-  //   if (!token) navigate("/login");
-  // }, [navigate]);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) navigate("/login");
+  }, [navigate]);
 
   useEffect(() => {
-    fetchQuizzes()
-      .then(setAvailable)
-      .catch(() => setError("Could not load quizzes."))
+    Promise.all([fetchQuizzes(), fetchResults()])
+      .then(([allQuizzes, results]) => {
+        // quizzes the user has already attempted
+        const attemptedIds = new Set(results.map((r) => r.quizId));
+
+        // available = all quizzes minus attempted ones
+        setAvailable(allQuizzes.filter((q) => !attemptedIds.has(q.id)));
+
+        // attempted = results data (already has score, timeTaken etc.)
+        setAttempted(results);
+      })
+      .catch(() => setError("Could not load dashboard data."))
       .finally(() => setLoading(false));
   }, []);
+
+  const avgScore =
+    attempted.length > 0
+      ? Math.round(
+          attempted.reduce(
+            (a, r) => a + (r.score / r.totalQuestions) * 100,
+            0,
+          ) / attempted.length,
+        )
+      : null;
 
   return (
     <div
@@ -48,6 +72,20 @@ export default function Dashboard() {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Theme toggle */}
+            <button
+              onClick={toggleTheme}
+              className="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200"
+              style={{
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+                color: "var(--text-muted)",
+              }}
+            >
+              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+
+            {/* Admin only: Create Quiz */}
             {isAdmin && (
               <button
                 onClick={() => navigate("/quiz/create")}
@@ -68,6 +106,8 @@ export default function Dashboard() {
                 Create Quiz
               </button>
             )}
+
+            {/* Sign out */}
             <button
               onClick={() => {
                 localStorage.clear();
@@ -119,8 +159,16 @@ export default function Dashboard() {
               value: loading ? "—" : available.length,
               accent: false,
             },
-            { label: "Attempted", value: "—", accent: false },
-            { label: "Avg Score", value: "—", accent: true },
+            {
+              label: "Attempted",
+              value: loading ? "—" : attempted.length,
+              accent: false,
+            },
+            {
+              label: "Avg Score",
+              value: loading ? "—" : avgScore !== null ? `${avgScore}%` : "—",
+              accent: true,
+            },
           ].map((stat, i) => (
             <div
               key={i}
@@ -192,21 +240,21 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Error state */}
+          {/* Error */}
           {!loading && error && (
             <div className="text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-xl px-5 py-4">
               {error}
             </div>
           )}
 
-          {/* Empty state */}
+          {/* Empty */}
           {!loading && !error && available.length === 0 && (
             <p className="text-sm" style={{ color: "var(--text-faint)" }}>
               No quizzes available yet.
             </p>
           )}
 
-          {/* Quiz cards */}
+          {/* Cards */}
           {!loading && !error && available.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {available.map((quiz) => (
@@ -226,10 +274,69 @@ export default function Dashboard() {
             <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>
               Attempted
             </h2>
+            {!loading && (
+              <span className="text-sm" style={{ color: "var(--text-faint)" }}>
+                {attempted.length}
+              </span>
+            )}
           </div>
-          <p className="text-sm" style={{ color: "var(--text-faint)" }}>
-            Attempt history coming soon.
-          </p>
+
+          {/* Loading skeletons */}
+          {loading && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="rounded-2xl p-5 animate-pulse"
+                  style={{
+                    background: "var(--surface)",
+                    border: "1px solid var(--border)",
+                  }}
+                >
+                  <div
+                    className="h-4 rounded w-3/4 mb-3"
+                    style={{ background: "var(--border)" }}
+                  />
+                  <div
+                    className="h-3 rounded w-1/2 mb-2"
+                    style={{ background: "var(--border)" }}
+                  />
+                  <div
+                    className="h-3 rounded w-1/3"
+                    style={{ background: "var(--border)" }}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Empty */}
+          {!loading && !error && attempted.length === 0 && (
+            <p className="text-sm" style={{ color: "var(--text-faint)" }}>
+              You haven't attempted any quizzes yet.
+            </p>
+          )}
+
+          {/* Cards */}
+          {!loading && !error && attempted.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {attempted.map((result) => (
+                <QuizCard
+                  key={result.id}
+                  quiz={{
+                    id: result.quizId,
+                    title: result.title,
+                    description: result.description,
+                    totalQuestions: result.totalQuestions,
+                    timeLimit: null,
+                  }}
+                  attempted={true}
+                  score={result.score}
+                  timeTaken={result.timeTaken}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

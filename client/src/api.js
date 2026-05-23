@@ -106,3 +106,26 @@ export const fetchLeaderboard = async (quizId) => {
     timeTaken: entry.time_taken, // backend key is time_taken
   }));
 };
+
+// ─── RESULTS (USER HISTORY) ───────────────────────────────────────────────────
+
+// GET /results
+// Response: { success, data: [ { id, quiz_id, title, description, score, total_questions, time_taken, submitted_at } ] }
+export const fetchResults = async () => {
+  const response = await fetch(`${BASE_URL}/results`, {
+    headers: { Authorization: `Bearer ${getToken()}` },
+  });
+  if (!response.ok) throw new Error("Failed to fetch results");
+  const data = await response.json();
+
+  return (data.data ?? []).map((result) => ({
+    id: result.id,
+    quizId: result.quiz_id,
+    title: result.title,
+    description: result.description ?? "",
+    score: result.score,
+    totalQuestions: result.total_questions,
+    timeTaken: result.time_taken,
+    submittedAt: result.submitted_at,
+  }));
+};

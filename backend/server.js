@@ -108,7 +108,8 @@ app.post("/login", (req, res) => {
             const token = jwt.sign(
               {
                 id: user.id,
-                email: user.email
+                email: user.email,
+                role: user.role
               },
               "secretkey",
               {

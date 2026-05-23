@@ -157,6 +157,14 @@ app.get("/protected", verifyToken, (req, res) => {
 
 });
 
+/* QUIZ ROUTES */
+
+const submitRoutes = require("./routes/submit");
+const leaderboardRoutes = require("./routes/leaderboard");
+
+app.use("/submit", submitRoutes);
+app.use("/leaderboard", leaderboardRoutes);
+
 /* SERVER */
 
 app.listen(5000, () => {

@@ -17,11 +17,46 @@
 * POST /quiz/add-question — Add a question to a quiz
 * GET /quiz — Fetch all quizzes with questions
 
+## 🗄 Database Schema
+
+### `users`
+| Column | Type | Notes |
+|--------|------|-------|
+| id | INT | PK, Auto Increment |
+| name | VARCHAR(255) | Not Null |
+| email | VARCHAR(255) | Unique, Not Null |
+| password | VARCHAR(255) | bcrypt hashed |
+
+### `quizzes`
+| Column | Type | Notes |
+|--------|------|-------|
+| id | INT | PK, Auto Increment |
+| title | VARCHAR(255) | Not Null |
+| created_at | TIMESTAMP | Default: current time |
+
+### `questions`
+| Column | Type | Notes |
+|--------|------|-------|
+| id | INT | PK, Auto Increment |
+| quiz_id | INT | FK → quizzes.id |
+| question_text | TEXT | Not Null |
+| option_a | VARCHAR(255) | Not Null |
+| option_b | VARCHAR(255) | Not Null |
+| option_c | VARCHAR(255) | Not Null |
+| option_d | VARCHAR(255) | Not Null |
+| correct_option | CHAR(1) | a, b, c or d |
+
+### `results` *(upcoming — Vaishnavi)*
+| Column | Type | Notes |
+|--------|------|-------|
+| id | INT | PK, Auto Increment |
+| user_id | INT | FK → users.id |
+| quiz_id | INT | FK → quizzes.id |
+| score | INT | |
+| submitted_at | TIMESTAMP | Default: current time |
+
 ## 🔄 In Progress
 
-* Quiz APIs
-* Submit Quiz API
-* Leaderboard System
 * POST /submit — Submit quiz answers
 * GET /leaderboard — Leaderboard system
 * Frontend Integration
@@ -34,7 +69,6 @@
 * API testing
 * Full frontend-backend connection
 * Deployment
-  
 
 ## 🌿 Branches
 

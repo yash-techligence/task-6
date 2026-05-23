@@ -12,13 +12,11 @@ export default function Dashboard() {
   const username = localStorage.getItem("username") ?? "User";
   const isAdmin = localStorage.getItem("role") === "admin";
 
-  // // Redirect to login if no token
   // useEffect(() => {
   //   const token = localStorage.getItem("token");
   //   if (!token) navigate("/login");
   // }, [navigate]);
 
-  // Fetch quizzes from backend
   useEffect(() => {
     fetchQuizzes()
       .then(setAvailable)
@@ -27,29 +25,34 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="min-h-screen p-6 md:p-10" style={{ background: "#080808" }}>
+    <div
+      className="min-h-screen p-6 md:p-10"
+      style={{ background: "var(--bg)" }}
+    >
       <div className="max-w-6xl mx-auto">
         {/* ── Header ── */}
         <div className="flex items-center justify-between mb-12">
           <div className="flex items-center gap-3">
             <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-black text-sm"
-              style={{ background: "var(--accent)" }}
+              className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm"
+              style={{ background: "var(--accent)", color: "var(--bg)" }}
             >
               Q
             </div>
-            <span className="text-white font-bold tracking-tight">
+            <span
+              className="font-bold tracking-tight"
+              style={{ color: "var(--text)" }}
+            >
               QuizPlatform
             </span>
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Admin-only: Create Quiz button */}
             {isAdmin && (
               <button
                 onClick={() => navigate("/quiz/create")}
                 className="flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-xl transition-all duration-200 hover:opacity-90 active:scale-95"
-                style={{ background: "var(--accent)", color: "#000" }}
+                style={{ background: "var(--accent)", color: "var(--bg)" }}
               >
                 <svg
                   width="14"
@@ -65,13 +68,24 @@ export default function Dashboard() {
                 Create Quiz
               </button>
             )}
-
             <button
               onClick={() => {
                 localStorage.clear();
                 navigate("/login");
               }}
-              className="text-xs text-white/60 hover:text-red-400 transition-colors duration-200 border border-white/10 hover:border-red-400/30 px-4 py-2 rounded-xl"
+              className="text-xs px-4 py-2 rounded-xl transition-colors duration-200"
+              style={{
+                color: "var(--text-muted)",
+                border: "1px solid var(--border)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "#f87171";
+                e.currentTarget.style.borderColor = "rgba(248,113,113,0.3)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "var(--text-muted)";
+                e.currentTarget.style.borderColor = "var(--border)";
+              }}
             >
               Sign out
             </button>
@@ -86,10 +100,13 @@ export default function Dashboard() {
           >
             Welcome back
           </p>
-          <h1 className="text-5xl font-extrabold text-white leading-tight">
+          <h1
+            className="text-5xl font-extrabold leading-tight"
+            style={{ color: "var(--text)" }}
+          >
             {username}
           </h1>
-          <p className="text-white/60 mt-2">
+          <p className="mt-2" style={{ color: "var(--text-muted)" }}>
             Ready to test your knowledge today?
           </p>
         </div>
@@ -107,15 +124,24 @@ export default function Dashboard() {
           ].map((stat, i) => (
             <div
               key={i}
-              className="bg-white/[0.03] border border-white/10 rounded-2xl p-5"
+              className="rounded-2xl p-5"
+              style={{
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+              }}
             >
               <p
-                className="text-3xl font-extrabold text-white"
-                style={stat.accent ? { color: "var(--accent)" } : {}}
+                className="text-3xl font-extrabold"
+                style={{ color: stat.accent ? "var(--accent)" : "var(--text)" }}
               >
                 {stat.value}
               </p>
-              <p className="text-white/50 text-sm mt-1">{stat.label}</p>
+              <p
+                className="text-sm mt-1"
+                style={{ color: "var(--text-muted)" }}
+              >
+                {stat.label}
+              </p>
             </div>
           ))}
         </div>
@@ -127,9 +153,13 @@ export default function Dashboard() {
               className="w-1.5 h-5 rounded-full"
               style={{ background: "var(--accent)" }}
             />
-            <h2 className="text-lg font-bold text-white">Available Quizzes</h2>
+            <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>
+              Available Quizzes
+            </h2>
             {!loading && (
-              <span className="text-white/20 text-sm">{available.length}</span>
+              <span className="text-sm" style={{ color: "var(--text-faint)" }}>
+                {available.length}
+              </span>
             )}
           </div>
 
@@ -139,11 +169,24 @@ export default function Dashboard() {
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 animate-pulse"
+                  className="rounded-2xl p-5 animate-pulse"
+                  style={{
+                    background: "var(--surface)",
+                    border: "1px solid var(--border)",
+                  }}
                 >
-                  <div className="h-4 bg-white/10 rounded w-3/4 mb-3" />
-                  <div className="h-3 bg-white/10 rounded w-1/2 mb-2" />
-                  <div className="h-3 bg-white/10 rounded w-1/3" />
+                  <div
+                    className="h-4 rounded w-3/4 mb-3"
+                    style={{ background: "var(--border)" }}
+                  />
+                  <div
+                    className="h-3 rounded w-1/2 mb-2"
+                    style={{ background: "var(--border)" }}
+                  />
+                  <div
+                    className="h-3 rounded w-1/3"
+                    style={{ background: "var(--border)" }}
+                  />
                 </div>
               ))}
             </div>
@@ -158,7 +201,9 @@ export default function Dashboard() {
 
           {/* Empty state */}
           {!loading && !error && available.length === 0 && (
-            <p className="text-white/30 text-sm">No quizzes available yet.</p>
+            <p className="text-sm" style={{ color: "var(--text-faint)" }}>
+              No quizzes available yet.
+            </p>
           )}
 
           {/* Quiz cards */}
@@ -174,10 +219,17 @@ export default function Dashboard() {
         {/* ── Attempted ── */}
         <div>
           <div className="flex items-center gap-3 mb-5">
-            <span className="w-1.5 h-5 rounded-full bg-white/20" />
-            <h2 className="text-lg font-bold text-white">Attempted</h2>
+            <span
+              className="w-1.5 h-5 rounded-full"
+              style={{ background: "var(--border)" }}
+            />
+            <h2 className="text-lg font-bold" style={{ color: "var(--text)" }}>
+              Attempted
+            </h2>
           </div>
-          <p className="text-white/30 text-sm">Attempt history coming soon.</p>
+          <p className="text-sm" style={{ color: "var(--text-faint)" }}>
+            Attempt history coming soon.
+          </p>
         </div>
       </div>
     </div>

@@ -3,11 +3,14 @@ const cors = require("cors");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const db = require("./db/db");
+const verifyToken = require("./middleware/authMiddleware");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+/* HOME */
 
 app.get("/", (req, res) => {
   res.send("API Running");
@@ -142,6 +145,19 @@ app.post("/login", (req, res) => {
   );
 
 });
+
+/* PROTECTED ROUTE */
+
+app.get("/protected", verifyToken, (req, res) => {
+
+  res.json({
+    success: true,
+    message: "Protected Route Accessed"
+  });
+
+});
+
+/* SERVER */
 
 app.listen(5000, () => {
   console.log("Server running on port 5000");

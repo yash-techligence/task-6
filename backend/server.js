@@ -45,7 +45,16 @@ app.post("/register", async (req, res) => {
 
           return res.status(500).json({
             success: false,
-            message: "Registration Failed",
+            if (err) {
+
+              console.log("REGISTER ERROR:", err);
+
+              return res.status(500).json({
+                success: false,
+                message: err.message,
+              });
+
+            }
           });
 
         }

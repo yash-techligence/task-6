@@ -16,7 +16,7 @@ function CreateQuiz() {
     try {
 
       const response = await fetch(
-        "http://localhost:5000/add-question",
+        "https://task-6-obpi.onrender.com/add-question",
         {
           method: "POST",
           headers: {

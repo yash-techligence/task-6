@@ -26,7 +26,7 @@ function QuizPage() {
     try {
 
       const response = await fetch(
-        "http://localhost:5000/questions"
+        "https://task-6-obpi.onrender.com/questions"
       );
 
       const data = await response.json();

@@ -124,8 +124,9 @@ app.post("/login", (req, res) => {
               token,
               user: {
                 id: user.id,
-                name: user.name,
-                email: user.email
+                username: user.username,
+                email: user.email,
+                role: user.role
               }
             });
 

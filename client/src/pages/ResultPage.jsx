@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { fetchLeaderboard } from "../api";
+import { fetchLeaderboard, fetchResults } from "../api";
 import { useAuth } from "../context/useAuth";
 import ScoreCard from "../components/ScoreCard";
 import QuizLeaderboard from "../components/QuizLeaderboard";
@@ -14,18 +14,42 @@ export default function ResultPage() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [score, setScore] = useState(state?.score ?? null);
+  const [total, setTotal] = useState(state?.total ?? null);
+  const [timeTaken, setTimeTaken] = useState(state?.timeTaken ?? null);
 
   const currentUser = user?.username;
-  const score = state?.score ?? 0;
-  const total = state?.total ?? 0;
-  const timeTaken = state?.timeTaken ?? 0;
+
+  const [resultLoaded, setResultLoaded] = useState(state !== null);
 
   useEffect(() => {
-    fetchLeaderboard(quizId)
-      .then(setLeaderboard)
-      .catch(() => setError("Could not load leaderboard."))
-      .finally(() => setLoading(false));
-  }, [quizId]);
+    const loadData = async () => {
+      try {
+        const [leaderboardData, results] = await Promise.all([
+          fetchLeaderboard(quizId),
+          !resultLoaded ? fetchResults() : Promise.resolve(null),
+        ]);
+
+        setLeaderboard(leaderboardData);
+
+        if (results !== null) {
+          const match = results.find((r) => r.quizId === Number(quizId));
+          if (match) {
+            setScore(match.score);
+            setTotal(match.totalQuestions);
+            setTimeTaken(match.timeTaken);
+            setResultLoaded(true);
+          }
+        }
+      } catch {
+        setError("Could not load result data.");
+      } finally {
+        setLoading(false);
+      }
+      };
+
+    loadData();
+  }, [quizId, resultLoaded]);
 
   return (
     <div
@@ -65,9 +89,9 @@ export default function ResultPage() {
 
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ScoreCard
-          score={score}
-          total={total}
-          timeTaken={timeTaken}
+          score={score ?? 0}
+          total={total ?? 0}
+          timeTaken={timeTaken ?? 0}
           onDashboard={() => navigate("/dashboard")}
         />
         <QuizLeaderboard

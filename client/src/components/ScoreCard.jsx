@@ -1,5 +1,8 @@
 export default function ScoreCard({ score, total, timeTaken, onDashboard }) {
-  const percentage = Math.round((score / total) * 100);
+  const safeScore = score ?? 0;
+  const safeTotal = total ?? 0;
+  const percentage =
+    safeTotal > 0 ? Math.round((safeScore / safeTotal) * 100) : 0;
 
   const getGrade = () => {
     if (percentage >= 90)
@@ -48,13 +51,13 @@ export default function ScoreCard({ score, total, timeTaken, onDashboard }) {
           className="text-9xl font-extrabold leading-none"
           style={{ color: "var(--text)" }}
         >
-          {score}
+          {safeScore}
         </span>
         <span
           className="text-4xl font-bold mb-3"
           style={{ color: "var(--text-muted)" }}
         >
-          / {total}
+          / {safeTotal}
         </span>
       </div>
 
@@ -71,8 +74,8 @@ export default function ScoreCard({ score, total, timeTaken, onDashboard }) {
       <div className="grid grid-cols-3 gap-3 mb-8">
         {[
           { value: `${percentage}%`, label: "Accuracy", color: "var(--text)" },
-          { value: score, label: "Correct", color: "var(--accent)" },
-          { value: total - score, label: "Wrong", color: "#f87171" },
+          { value: safeScore, label: "Correct", color: "var(--accent)" },
+          { value: safeTotal - safeScore, label: "Wrong", color: "#f87171" },
         ].map((stat, i) => (
           <div
             key={i}

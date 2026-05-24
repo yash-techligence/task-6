@@ -3,7 +3,6 @@ import { useAuth } from "../context/useAuth";
 import { useTheme } from "../context/useTheme";
 import {
   LayoutDashboard,
-  Trophy,
   LogOut,
   LogIn,
   UserPlus,
@@ -106,14 +105,6 @@ export default function Navbar() {
                 style={navBtn(isActive("/dashboard"))}
               >
                 <LayoutDashboard size={18} />
-              </Link>
-
-              <Link
-                to="/leaderboard"
-                className="w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-300 border"
-                style={navBtn(isActive("/leaderboard"))}
-              >
-                <Trophy size={18} />
               </Link>
 
               <button

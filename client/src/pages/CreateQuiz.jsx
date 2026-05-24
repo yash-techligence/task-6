@@ -6,6 +6,7 @@ const BASE_URL = "http://localhost:5000";
 export default function CreateQuiz() {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
+  const [timeLimit, setTimeLimit] = useState("");
   const [quizId, setQuizId] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [questionData, setQuestionData] = useState({
@@ -17,12 +18,25 @@ export default function CreateQuiz() {
     answer: "a",
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const inputStyle = {
+    background: "var(--surface)",
+    border: "1px solid var(--border)",
+    color: "var(--text)",
+  };
 
   async function createQuiz() {
     if (!title.trim()) {
-      alert("Please enter quiz title");
+      setError("Please enter quiz title");
       return;
     }
+    if (!timeLimit || isNaN(timeLimit) || Number(timeLimit) <= 0) {
+      setError("Please enter a valid time limit in minutes");
+      return;
+    }
+    setError("");
     try {
       setLoading(true);
       const res = await fetch(`${BASE_URL}/quiz/create`, {
@@ -31,18 +45,16 @@ export default function CreateQuiz() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({ title }),
+        body: JSON.stringify({ title, time_limit: Number(timeLimit) * 60 }),
       });
       const data = await res.json();
       if (data.success) {
         setQuizId(data.quiz_id);
-        alert("Quiz Created Successfully");
       } else {
-        alert(data.message || "Failed to create quiz");
+        setError(data.message || "Failed to create quiz");
       }
-    } catch (err) {
-      console.log(err);
-      alert("Failed to create quiz");
+    } catch {
+      setError("Failed to create quiz");
     } finally {
       setLoading(false);
     }
@@ -56,9 +68,10 @@ export default function CreateQuiz() {
       !questionData.option3 ||
       !questionData.option4
     ) {
-      alert("Please fill all fields");
+      setError("Please fill all fields");
       return;
     }
+    setError("");
     try {
       setLoading(true);
       const res = await fetch(`${BASE_URL}/quiz/add-question`, {
@@ -72,7 +85,7 @@ export default function CreateQuiz() {
       const data = await res.json();
       if (data.success) {
         setQuestions([...questions, questionData]);
-        alert("Question Added Successfully");
+        setSuccess(`Question ${questions.length + 1} added successfully`);
         setQuestionData({
           question: "",
           option1: "",
@@ -82,26 +95,22 @@ export default function CreateQuiz() {
           answer: "a",
         });
       } else {
-        alert(data.message || "Failed to add question");
+        setError(data.message || "Failed to add question");
       }
-    } catch (err) {
-      console.log(err);
-      alert("Failed to add question");
+    } catch {
+      setError("Failed to add question");
     } finally {
       setLoading(false);
     }
   }
 
   function finishQuiz() {
-    alert(`Quiz created successfully with ${questions.length} questions`);
+    if (questions.length === 0) {
+      setError("Please add at least one question before finishing");
+      return;
+    }
     navigate("/dashboard");
   }
-
-  const inputStyle = {
-    background: "var(--surface)",
-    border: "1px solid var(--border)",
-    color: "var(--text)",
-  };
 
   return (
     <div
@@ -123,6 +132,18 @@ export default function CreateQuiz() {
             Create Quiz
           </h1>
 
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/40 text-red-400 rounded-xl px-4 py-2.5 mb-4 text-sm">
+              ⚠️ {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="bg-green-500/10 border border-green-500/40 text-green-400 rounded-xl px-4 py-2.5 mb-4 text-sm">
+              ✓ {success}
+            </div>
+          )}
+
           {!quizId ? (
             <div className="space-y-4">
               <div>
@@ -137,6 +158,22 @@ export default function CreateQuiz() {
                   placeholder="Enter quiz title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
+                  className="w-full rounded-xl px-4 py-2.5 text-sm focus:outline-none transition"
+                  style={inputStyle}
+                />
+              </div>
+              <div>
+                <label
+                  className="block text-sm font-medium mb-2"
+                  style={{ color: "var(--text-muted)" }}
+                >
+                  Time Limit (seconds)
+                </label>
+                <input
+                  type="number"
+                  placeholder="e.g. 5 for 5 minutes"
+                  value={timeLimit}
+                  onChange={(e) => setTimeLimit(e.target.value)}
                   className="w-full rounded-xl px-4 py-2.5 text-sm focus:outline-none transition"
                   style={inputStyle}
                 />

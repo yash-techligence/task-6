@@ -1,22 +1,22 @@
-const jwt = require('jsonwebtoken');
-require('dotenv').config();
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 const verifyToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
+  const authHeader = req.headers["authorization"];
 
   if (!authHeader) {
     return res.status(401).json({
       success: false,
-      message: 'Access denied. No token provided.'
+      message: "Access denied. No token provided.",
     });
   }
 
-  const token = authHeader.split(' ')[1];
+  const token = authHeader.split(" ")[1];
 
   if (!token) {
     return res.status(401).json({
       success: false,
-      message: 'Access denied. Token missing.'
+      message: "Access denied. Token missing.",
     });
   }
 
@@ -27,7 +27,7 @@ const verifyToken = (req, res, next) => {
   } catch (err) {
     return res.status(403).json({
       success: false,
-      message: 'Invalid or expired token. Please login again.'
+      message: "Invalid or expired token. Please login again.",
     });
   }
 };

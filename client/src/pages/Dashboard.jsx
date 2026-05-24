@@ -249,7 +249,7 @@ export default function Dashboard() {
                 <QuizCard
                   key={result.id}
                   quiz={{
-                    id: result.quizId,
+                    id: result.id,
                     title: result.title,
                     description: result.description,
                     totalQuestions: result.totalQuestions,

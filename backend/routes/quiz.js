@@ -7,59 +7,38 @@ const adminMiddleware = require("../middleware/adminMiddleware");
 /* CREATE QUIZ */
 
 router.post("/create", verifyToken, adminMiddleware, (req, res) => {
-
-  const { title } = req.body;
+  const { title, time_limit } = req.body;
 
   if (!title) {
-
     return res.status(400).json({
       success: false,
-      message: "Title is required"
+      message: "Title is required",
     });
-
   }
 
-  const sql =
-    "INSERT INTO quizzes (title) VALUES (?)";
+  const sql = "INSERT INTO quizzes (title, time_limit) VALUES (?, ?)";
 
-  db.query(
-    sql,
-    [title],
-    (err, result) => {
-
-      if (err) {
-
-        return res.status(500).json({
-          success: false,
-          message: err.message
-        });
-
-      }
-
-      res.json({
-        success: true,
-        message: "Quiz created",
-        quiz_id: result.insertId
+  db.query(sql, [title, time_limit || 60], (err, result) => {
+    if (err) {
+      return res.status(500).json({
+        success: false,
+        message: err.message,
       });
-
     }
-  );
 
+    res.json({
+      success: true,
+      message: "Quiz created",
+      quiz_id: result.insertId,
+    });
+  });
 });
 
 /* ADD QUESTION */
 
-router.post("/add-question", verifyToken, adminMiddleware,  (req, res) => {
-
-  const {
-    quiz_id,
-    question,
-    option1,
-    option2,
-    option3,
-    option4,
-    answer
-  } = req.body;
+router.post("/add-question", verifyToken, adminMiddleware, (req, res) => {
+  const { quiz_id, question, option1, option2, option3, option4, answer } =
+    req.body;
 
   if (
     !quiz_id ||
@@ -70,65 +49,58 @@ router.post("/add-question", verifyToken, adminMiddleware,  (req, res) => {
     !option4 ||
     !answer
   ) {
-
     return res.status(400).json({
       success: false,
-      message: "All fields are required"
+      message: "All fields are required",
     });
-
   }
 
   const sql = `
     INSERT INTO questions
     (
       quiz_id,
-      question_text,
+      question,
       option_a,
       option_b,
       option_c,
       option_d,
-      correct_option
+      correct_answer
     )
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `;
 
   db.query(
     sql,
-    [
-      quiz_id,
-      question,
-      option1,
-      option2,
-      option3,
-      option4,
-      answer
-    ],
+    [quiz_id, question, option1, option2, option3, option4, answer],
     (err, result) => {
-
       if (err) {
-
         return res.status(500).json({
           success: false,
-          message: err.message
+          message: err.message,
         });
-
       }
 
-      res.json({
-        success: true,
-        message: "Question added successfully",
-        question_id: result.insertId
+      const updateSql =
+        "UPDATE quizzes SET total_questions = total_questions + 1 WHERE id = ?";
+      db.query(updateSql, [quiz_id], (updateErr) => {
+        if (updateErr) {
+          return res
+            .status(500)
+            .json({ success: false, message: updateErr.message });
+        }
+        res.json({
+          success: true,
+          message: "Question added successfully",
+          question_id: result.insertId,
+        });
       });
-
-    }
+    },
   );
-
 });
 
 /* GET QUIZZES */
 
 router.get("/", verifyToken, (req, res) => {
-
   const sql = `
     SELECT
       q.id AS quiz_id,
@@ -137,70 +109,61 @@ router.get("/", verifyToken, (req, res) => {
       q.total_questions,
       q.time_limit,
       qs.id AS question_id,
-      qs.question_text,
+      qs.question,
       qs.option_a,
       qs.option_b,
       qs.option_c,
-      qs.option_d
+      qs.option_d,
+      qs.correct_answer
     FROM quizzes q
     LEFT JOIN questions qs
     ON q.id = qs.quiz_id
     ORDER BY q.id, qs.id
   `;
 
-  db.query(
-    sql,
-    (err, rows) => {
+  db.query(sql, (err, rows) => {
+    if (err) {
+      return res.status(500).json({
+        success: false,
+        message: err.message,
+      });
+    }
 
-      if (err) {
+    const quizzes = {};
 
-        return res.status(500).json({
-          success: false,
-          message: err.message
-        });
-
+    rows.forEach((row) => {
+      if (!quizzes[row.quiz_id]) {
+        quizzes[row.quiz_id] = {
+          id: row.quiz_id,
+          title: row.title,
+          description: row.description,
+          total_questions: row.total_questions,
+          time_limit: row.time_limit,
+          questions: [],
+        };
       }
 
-      const quizzes = {};
+      if (row.question_id) {
+        quizzes[row.quiz_id].questions.push({
+          id: row.question_id,
+          question: row.question,
+          option1: row.option_a,
+          option2: row.option_b,
+          option3: row.option_c,
+          option4: row.option_d,
+          correct_option: row.correct_answer,
+        });
+      }
+    });
 
-      rows.forEach((row) => {
-
-        if (!quizzes[row.quiz_id]) {
-
-          quizzes[row.quiz_id] = {
-            id: row.quiz_id,
-            title: row.title,
-            description: row.description,
-            total_questions: row.total_questions,
-            time_limit: row.time_limit,
-            questions: []
-          };
-
-        }
-
-        if (row.question_id) {
-
-          quizzes[row.quiz_id].questions.push({
-            id: row.question_id,
-            question: row.question_text,
-            option1: row.option_a,
-            option2: row.option_b,
-            option3: row.option_c,
-            option4: row.option_d
-          });
-
-        }
-
-      });
-
-      res.json({
-        success: true,
-        quizzes: Object.values(quizzes)
-      });
-
-    }
-  );
-
+    res.json({
+      success: true,
+      quizzes: Object.values(quizzes).map((q) => ({
+        ...q,
+        total_questions: q.questions.length,
+      })),
+    });
+  });
 });
 
 module.exports = router;

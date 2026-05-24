@@ -1,8 +1,10 @@
 CREATE TABLE IF NOT EXISTS users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   username VARCHAR(50) NOT NULL UNIQUE,
+  name VARCHAR(100),
   email VARCHAR(100) NOT NULL UNIQUE,
   password VARCHAR(255) NOT NULL,
+  role ENUM('user', 'admin') DEFAULT 'user',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -12,6 +14,7 @@ CREATE TABLE IF NOT EXISTS quizzes (
   description TEXT,
   total_questions INT DEFAULT 0,
   time_limit INT DEFAULT 60,
+  timer INT DEFAULT 30,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

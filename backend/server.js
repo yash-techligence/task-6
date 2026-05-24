@@ -2,23 +2,37 @@ const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+
 const db = require("./db/db");
+
 const verifyToken = require("./middleware/authMiddleware");
+
 const quizRoutes = require("./routes/quiz");
 const resultsRoutes = require("./routes/results");
+const submitRoutes = require("./routes/submit");
+const leaderboardRoutes = require("./routes/leaderboard");
+
 const app = express();
 
-app.use(cors({
-  origin: "https://task-6-1-o7cj.onrender.com",
-  credentials: true,
-}));
+/* MIDDLEWARE */
+
+app.use(cors());
+
 app.use(express.json());
+
+/* ROUTES */
+
 app.use("/results", resultsRoutes);
+app.use("/quiz", quizRoutes);
+app.use("/submit", submitRoutes);
+app.use("/leaderboard", leaderboardRoutes);
 
 /* HOME */
 
 app.get("/", (req, res) => {
+
   res.send("API Running");
+
 });
 
 /* REGISTER */
@@ -41,20 +55,11 @@ app.post("/register", async (req, res) => {
 
         if (err) {
 
-          console.log(err);
+          console.log("REGISTER ERROR:", err);
 
           return res.status(500).json({
             success: false,
-            if (err) {
-
-              console.log("REGISTER ERROR:", err);
-
-              return res.status(500).json({
-                success: false,
-                message: err.message,
-              });
-
-            }
+            message: err.message,
           });
 
         }
@@ -69,7 +74,7 @@ app.post("/register", async (req, res) => {
 
   } catch (error) {
 
-    console.log(error);
+    console.log("SERVER ERROR:", error);
 
     res.status(500).json({
       success: false,
@@ -95,9 +100,11 @@ app.post("/login", (req, res) => {
 
       if (err) {
 
+        console.log("LOGIN ERROR:", err);
+
         return res.status(500).json({
           success: false,
-          message: "Server Error"
+          message: "Server Error",
         });
 
       }
@@ -106,7 +113,7 @@ app.post("/login", (req, res) => {
 
         return res.json({
           success: false,
-          message: "User not found"
+          message: "User not found",
         });
 
       }
@@ -122,7 +129,7 @@ app.post("/login", (req, res) => {
 
         return res.json({
           success: false,
-          message: "Invalid Password"
+          message: "Invalid Password",
         });
 
       }
@@ -131,7 +138,7 @@ app.post("/login", (req, res) => {
 
         return res.json({
           success: false,
-          message: `This account is not a ${role}`
+          message: `This account is not a ${role}`,
         });
 
       }
@@ -140,11 +147,11 @@ app.post("/login", (req, res) => {
         {
           id: user.id,
           email: user.email,
-          role: user.role
+          role: user.role,
         },
         "secretkey",
         {
-          expiresIn: "1h"
+          expiresIn: "1h",
         }
       );
 
@@ -156,8 +163,8 @@ app.post("/login", (req, res) => {
           id: user.id,
           name: user.name,
           email: user.email,
-          role: user.role
-        }
+          role: user.role,
+        },
       });
 
     }
@@ -165,28 +172,16 @@ app.post("/login", (req, res) => {
 
 });
 
-/* QUIZ ROUTES */
-
-app.use("/quiz", quizRoutes);
-
 /* PROTECTED ROUTE */
 
 app.get("/protected", verifyToken, (req, res) => {
 
   res.json({
     success: true,
-    message: "Protected Route Accessed"
+    message: "Protected Route Accessed",
   });
 
 });
-
-/* QUIZ ROUTES */
-
-const submitRoutes = require("./routes/submit");
-const leaderboardRoutes = require("./routes/leaderboard");
-
-app.use("/submit", submitRoutes);
-app.use("/leaderboard", leaderboardRoutes);
 
 /* ADD QUESTION */
 
@@ -198,7 +193,7 @@ app.post("/add-question", (req, res) => {
     optionB,
     optionC,
     optionD,
-    correctAnswer
+    correctAnswer,
   } = req.body;
 
   const sql = `
@@ -215,24 +210,24 @@ app.post("/add-question", (req, res) => {
       optionB,
       optionC,
       optionD,
-      correctAnswer
+      correctAnswer,
     ],
     (err, result) => {
 
       if (err) {
 
-        console.log(err);
+        console.log("ADD QUESTION ERROR:", err);
 
         return res.status(500).json({
           success: false,
-          message: "Failed to add question"
+          message: "Failed to add question",
         });
 
       }
 
       res.json({
         success: true,
-        message: "Question Added Successfully"
+        message: "Question Added Successfully",
       });
 
     }
@@ -250,18 +245,18 @@ app.get("/questions", (req, res) => {
 
     if (err) {
 
-      console.log(err);
+      console.log("FETCH QUESTIONS ERROR:", err);
 
       return res.status(500).json({
         success: false,
-        message: "Failed to fetch questions"
+        message: "Failed to fetch questions",
       });
 
     }
 
     res.json({
       success: true,
-      questions: result
+      questions: result,
     });
 
   });
@@ -271,5 +266,7 @@ app.get("/questions", (req, res) => {
 /* SERVER */
 
 app.listen(5000, () => {
+
   console.log("Server running on port 5000");
+
 });

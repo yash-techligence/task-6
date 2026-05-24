@@ -5,11 +5,12 @@ const jwt = require("jsonwebtoken");
 const db = require("./db/db");
 const verifyToken = require("./middleware/authMiddleware");
 const quizRoutes = require("./routes/quiz");
-
+const resultsRoutes = require("./routes/results");
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use("/results", resultsRoutes);
 
 /* HOME */
 
@@ -21,18 +22,18 @@ app.get("/", (req, res) => {
 
 app.post("/register", async (req, res) => {
 
-  const { name, email, password } = req.body;
+  const { username, email, password } = req.body;
 
   try {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const sql =
-      "INSERT INTO users (name, email, password) VALUES (?, ?, ?)";
+      "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
 
     db.query(
       sql,
-      [name, email, hashedPassword],
+      [username, email, hashedPassword],
       (err, result) => {
 
         if (err) {
@@ -108,7 +109,8 @@ app.post("/login", (req, res) => {
             const token = jwt.sign(
               {
                 id: user.id,
-                email: user.email
+                email: user.email,
+                role: user.role
               },
               "secretkey",
               {
@@ -119,7 +121,13 @@ app.post("/login", (req, res) => {
             res.json({
               success: true,
               message: "Login Successful",
-              token
+              token,
+              user: {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                role: user.role
+              }
             });
 
           } else {

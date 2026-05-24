@@ -9,7 +9,7 @@ const resultsRoutes = require("./routes/results");
 const app = express();
 
 app.use(cors({
-  origin: "https://quiz-backend-tq5h.onrender.com",
+  origin: "https://task-6-1-o7cj.onrender.com",
   credentials: true,
 }));
 app.use(express.json());

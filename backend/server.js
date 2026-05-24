@@ -176,6 +176,86 @@ const leaderboardRoutes = require("./routes/leaderboard");
 app.use("/submit", submitRoutes);
 app.use("/leaderboard", leaderboardRoutes);
 
+/* ADD QUESTION */
+
+app.post("/add-question", (req, res) => {
+
+  const {
+    question,
+    optionA,
+    optionB,
+    optionC,
+    optionD,
+    correctAnswer
+  } = req.body;
+
+  const sql = `
+    INSERT INTO questions
+    (question, optionA, optionB, optionC, optionD, correctAnswer)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
+
+  db.query(
+    sql,
+    [
+      question,
+      optionA,
+      optionB,
+      optionC,
+      optionD,
+      correctAnswer
+    ],
+    (err, result) => {
+
+      if (err) {
+
+        console.log(err);
+
+        return res.status(500).json({
+          success: false,
+          message: "Failed to add question"
+        });
+
+      }
+
+      res.json({
+        success: true,
+        message: "Question Added Successfully"
+      });
+
+    }
+  );
+
+});
+
+/* GET QUESTIONS */
+
+app.get("/questions", (req, res) => {
+
+  const sql = "SELECT * FROM questions";
+
+  db.query(sql, (err, result) => {
+
+    if (err) {
+
+      console.log(err);
+
+      return res.status(500).json({
+        success: false,
+        message: "Failed to fetch questions"
+      });
+
+    }
+
+    res.json({
+      success: true,
+      questions: result
+    });
+
+  });
+
+});
+
 /* SERVER */
 
 app.listen(5000, () => {

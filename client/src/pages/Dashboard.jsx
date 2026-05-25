@@ -23,7 +23,7 @@ export default function Dashboard() {
 
         const resultData = await fetchResults();
 
-        const quizzes = quizData.quizzes || [];
+        const quizzes = Array.isArray(quizData) ? quizData : quizData.quizzes || [];
 
         const results = resultData || [];
 

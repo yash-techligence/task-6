@@ -2,9 +2,9 @@ const express = require("express");
 
 const router = express.Router();
 
-const db = require("../db/db");
+const db = require("../db/connection"); // ✅
 
-const verifyToken = require("../middleware/authMiddleware");
+const verifyToken = require("../middleware/auth"); // ✅
 
 const adminMiddleware = require("../middleware/adminMiddleware");
 

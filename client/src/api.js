@@ -102,7 +102,11 @@ export const fetchQuizzes = async () => {
 
       option_d: q.option4,
 
-      correct_answer: q.correct_option,
+     correct_answer: (() => {
+  const opts = [q.option1, q.option2, q.option3, q.option4];
+  const idx = opts.indexOf(q.correct_option);
+  return idx >= 0 ? ["a","b","c","d"][idx] : q.correct_option;
+})(),
 
     })),
 
@@ -164,7 +168,11 @@ export const fetchQuiz = async (quizId) => {
 
       option_d: q.option4,
 
-      correct_answer: q.correct_option,
+      correct_answer: (() => {
+  const opts = [q.option1, q.option2, q.option3, q.option4];
+  const idx = opts.indexOf(q.correct_option);
+  return idx >= 0 ? ["a","b","c","d"][idx] : q.correct_option;
+})(),
 
     })),
 

@@ -32,7 +32,7 @@ app.post("/register", async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     const sql =
-      "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
+      "INSERT INTO users (name, email, password) VALUES (?, ?, ?)";
     db.query(
       sql,
       [username, email, hashedPassword],
@@ -114,8 +114,8 @@ app.post("/login", (req, res) => {
         token,
         user: {
           id: user.id,
-          username: user.username,
-          name: user.username,
+          username: user.name,
+          name: user.name,
           email: user.email,
           role: user.role || "user",
         },

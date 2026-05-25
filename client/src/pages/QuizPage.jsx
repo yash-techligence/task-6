@@ -45,8 +45,9 @@ export default function QuizPage() {
     const timeTaken = Math.round((Date.now() - startTime.current) / 1000);
     const allQuestions = quizRef.current.questions ?? [];
     const score = allQuestions.reduce((acc, q, i) => {
-      return answersRef.current[i] === q.correct_answer ? acc + 1 : acc;
-    }, 0);
+  console.log(`Q${i}: selected=${answersRef.current[i]} correct=${q.correct_answer}`);
+  return answersRef.current[i] === q.correct_answer ? acc + 1 : acc;
+}, 0);
     try {
       await submitQuiz({
         quizId: quizRef.current.id,

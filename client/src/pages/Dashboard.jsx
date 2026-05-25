@@ -23,33 +23,20 @@ export default function Dashboard() {
 
         const resultData = await fetchResults();
 
-        console.log("QUIZZES:", quizData);
-        console.log("RESULTS:", resultData);
+        const quizzes = Array.isArray(quizData) ? quizData : quizData.quizzes || [];
 
-        const quizzes = Array.isArray(quizData)
-          ? quizData
-          : quizData.quizzes || [];
-
-        const results = Array.isArray(resultData)
-          ? resultData
-          : [];
-
-        /* FIXED ATTEMPTED QUIZ IDS */
+        const results = resultData || [];
 
         const attemptedQuizIds = results.map((r) =>
-          Number(r.quizId || r.quiz_id)
+          Number(r.quizId)
         );
 
-        console.log("ATTEMPTED IDS:", attemptedQuizIds);
-
         const availableQuizzes = quizzes.filter(
-          (quiz) =>
-            !attemptedQuizIds.includes(Number(quiz.id))
+          (quiz) => !attemptedQuizIds.includes(Number(quiz.id))
         );
 
         const attemptedQuizzes = quizzes.filter(
-          (quiz) =>
-            attemptedQuizIds.includes(Number(quiz.id))
+          (quiz) => attemptedQuizIds.includes(Number(quiz.id))
         );
 
         setAvailable(availableQuizzes);
@@ -58,7 +45,7 @@ export default function Dashboard() {
 
       } catch (err) {
 
-        console.log("DASHBOARD ERROR:", err);
+        console.log(err);
 
       } finally {
 

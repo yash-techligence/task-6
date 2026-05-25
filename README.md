@@ -99,9 +99,13 @@ Environment Variables
 Create .env file inside backend folder:
 
 DB_HOST=your_host
+
 DB_USER=your_user
+
 DB_PASSWORD=your_password
+
 DB_NAME=railway
+
 DB_PORT=your_port
 
 JWT_SECRET=your_secret

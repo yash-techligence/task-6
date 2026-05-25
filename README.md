@@ -1,71 +1,154 @@
-# 📌 Current Progress
+# Quiz Platform
 
-## ✅ Completed
+A modern full-stack Quiz Platform built using React, Node.js, Express.js, MySQL, and Vite.
 
-* Backend setup using Express.js
-* MySQL database connection
-* User Registration API
-* User Login API
-* JWT Authentication
-* bcrypt Password Hashing
-* Protected Routes Middleware
-* React + Vite frontend setup
-* Tailwind CSS setup
-* GitHub branch-based collaboration setup
-* `quizzes` and `questions` database tables
-* POST /quiz/create — Create a new quiz
-* POST /quiz/add-question — Add a question to a quiz
-* GET /quiz — Fetch all quizzes with questions
+## Live Demo
 
-## 🗄 Database Schema
+Frontend:
+https://task-6-frontend-pgda.onrender.com
 
-### `users`
-| Column | Type | Notes |
-|--------|------|-------|
-| id | INT | PK, Auto Increment |
-| name | VARCHAR(255) | Not Null |
-| email | VARCHAR(255) | Unique, Not Null |
-| password | VARCHAR(255) | bcrypt hashed |
+Backend:
+https://task-6-2-1zvc.onrender.com
 
-### `quizzes`
-| Column | Type | Notes |
-|--------|------|-------|
-| id | INT | PK, Auto Increment |
-| title | VARCHAR(255) | Not Null |
-| created_at | TIMESTAMP | Default: current time |
+---
 
-### `questions`
-| Column | Type | Notes |
-|--------|------|-------|
-| id | INT | PK, Auto Increment |
-| quiz_id | INT | FK → quizzes.id |
-| question_text | TEXT | Not Null |
-| option_a | VARCHAR(255) | Not Null |
-| option_b | VARCHAR(255) | Not Null |
-| option_c | VARCHAR(255) | Not Null |
-| option_d | VARCHAR(255) | Not Null |
-| correct_option | CHAR(1) | a, b, c or d |
+## Features
+
+### User Features
+- User Registration & Login
+- JWT Authentication
+- Attempt Quizzes
+- Timer-based Quiz System
+- View Quiz Results
+- Leaderboard Ranking
+- Responsive UI
+
+### Admin Features
+- Admin Login
+- Create Quizzes
+- Add Questions Dynamically
+- Manage Quiz Data
+- View Platform Activity
+
+---
+
+## Tech Stack
+
+### Frontend
+- React.js
+- Vite
+- CSS
+- React Router
+
+### Backend
+- Node.js
+- Express.js
+- JWT Authentication
+- bcrypt
+
+### Database
+- MySQL (Railway)
+
+### Deployment
+- Frontend: Render
+- Backend: Render
+
+---
+
+## Project Structure
+
+```bash
+task-6/
+│
+├── backend/
+│   ├── routes/
+│   ├── middleware/
+│   ├── db/
+│   └── server.js
+│
+├── client/
+│   ├── src/
+│   ├── pages/
+│   ├── components/
+│   └── api/
+│
+└── README.md
+
+```
+
+Installation
+
+Clone Repository
+git clone https://github.com/yash-techligence/task-6.git
+Install Dependencies
+
+Backend:
+
+cd backend
+npm install
+
+Frontend:
+
+cd client
+npm install
+
+---
+
+Environment Variables
+
+Create .env file inside backend folder:
+
+DB_HOST=your_host
+DB_USER=your_user
+DB_PASSWORD=your_password
+DB_NAME=railway
+DB_PORT=your_port
+
+JWT_SECRET=your_secret
+
+---
+
+Run Project
+
+Backend:
+
+npm start
+
+Frontend:
+
+npm run dev
+
+---
+
+Deployment
+Frontend
+
+Deployed on Render Static Site.
+
+Backend
+
+Deployed on Render Web Service.
+
+Database
+
+Hosted on Railway MySQL.
+
+---
+
+## Contributors
+
+This project was developed collaboratively by the project team as part of a full-stack web development internship/project.
+
+---
+
+License
+
+This project is developed for educational and internship purposes.
 
 
-## 🔄 In Progress
+Then save and push:
 
-* POST /submit — Submit quiz answers
-* GET /leaderboard — Leaderboard system
-* Frontend Integration
-
-## 🛠 Upcoming
-
-* `results` database table (Vaishnavi)
-* Score calculation & storage (Harshal)
-* Final backend integration
-* API testing
-* Full frontend-backend connection
-* Deployment
-
-## 🌿 Branches
-
-| Branch | Owner | Work |
-|--------|-------|------|
-| `backend-auth` | Yash | Register, Login, JWT, Middleware |
-| `quiz-tables-apis` | Anshul | Quiz tables, Quiz APIs |
-
+```bash id="j9m2rx"
+git add .
+git commit -m "Added professional README"
+git push origin feature/score-leaderboard

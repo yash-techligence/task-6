@@ -71,7 +71,7 @@ app.post("/login", (req, res) => {
 
   const sql =
     role === "admin"
-      ? "SELECT * FROM users WHERE name = ? AND role = 'admin'"
+      ? "SELECT * FROM users WHERE username = ? AND role = 'admin'"
       : "SELECT * FROM users WHERE email = ?";
 
   const value = role === "admin" ? username : email;

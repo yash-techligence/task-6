@@ -1,11 +1,9 @@
 const express = require("express");
-
 const router = express.Router();
+const db = require("../db/connection");
+const verifyToken = require("../middleware/auth");
 
-const db = require("../db/db");
-
-router.get("/", (req, res) => {
-
+router.get("/", verifyToken, (req, res) => {
   const { quiz_id } = req.query;
 
   if (!quiz_id) {
@@ -19,6 +17,7 @@ router.get("/", (req, res) => {
     SELECT
       results.id,
       results.score,
+      results.total_questions,
       results.time_taken AS timeTaken,
       users.name AS username
     FROM results
@@ -29,17 +28,17 @@ router.get("/", (req, res) => {
   `;
 
   db.query(sql, [quiz_id], (err, rows) => {
-
     if (err) {
       console.log(err);
-
       return res.status(500).json({
         success: false,
         message: err.message,
       });
     }
-
-    res.json(rows);
+    res.json({
+      success: true,
+      leaderboard: rows
+    });
   });
 });
 

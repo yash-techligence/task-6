@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function CreateQuiz() {
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const [question, setQuestion] = useState("");
   const [optionA, setOptionA] = useState("");
@@ -11,13 +12,9 @@ function CreateQuiz() {
   const [correctAnswer, setCorrectAnswer] = useState("");
   const navigate = useNavigate();
 
-const addQuestion = async () => {
-
-  try {
-
-    const response = await fetch(
-      "http://localhost:5000/add-question",
-      {
+  const addQuestion = async () => {
+    try {
+      const response = await fetch(`${API_URL}/add-question`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -30,36 +27,27 @@ const addQuestion = async () => {
           optionD,
           correctAnswer,
         }),
+      });
+
+      const data = await response.json();
+
+      alert(data.message);
+
+      if (data.success) {
+        setQuestion("");
+        setOptionA("");
+        setOptionB("");
+        setOptionC("");
+        setOptionD("");
+        setCorrectAnswer("");
       }
-    );
-
-    const data = await response.json();
-
-    alert(data.message);
-
-    if (data.success) {
-
-      setQuestion("");
-      setOptionA("");
-      setOptionB("");
-      setOptionC("");
-      setOptionD("");
-      setCorrectAnswer("");
-
+    } catch (error) {
+      console.log(error);
+      alert("Server Error");
     }
-
-  } catch (error) {
-
-    console.log(error);
-
-    alert("Server Error");
-
-  }
-
-};
+  };
 
   return (
-
     <div
       style={{
         minHeight: "100vh",
@@ -68,7 +56,6 @@ const addQuestion = async () => {
         padding: "30px",
       }}
     >
-
       <h1>Create Quiz Question</h1>
 
       <input
@@ -78,7 +65,8 @@ const addQuestion = async () => {
         onChange={(e) => setQuestion(e.target.value)}
       />
 
-      <br /><br />
+      <br />
+      <br />
 
       <input
         type="text"
@@ -87,7 +75,8 @@ const addQuestion = async () => {
         onChange={(e) => setOptionA(e.target.value)}
       />
 
-      <br /><br />
+      <br />
+      <br />
 
       <input
         type="text"
@@ -96,7 +85,8 @@ const addQuestion = async () => {
         onChange={(e) => setOptionB(e.target.value)}
       />
 
-      <br /><br />
+      <br />
+      <br />
 
       <input
         type="text"
@@ -105,7 +95,8 @@ const addQuestion = async () => {
         onChange={(e) => setOptionC(e.target.value)}
       />
 
-      <br /><br />
+      <br />
+      <br />
 
       <input
         type="text"
@@ -114,7 +105,8 @@ const addQuestion = async () => {
         onChange={(e) => setOptionD(e.target.value)}
       />
 
-      <br /><br />
+      <br />
+      <br />
 
       <input
         type="text"
@@ -123,24 +115,17 @@ const addQuestion = async () => {
         onChange={(e) => setCorrectAnswer(e.target.value)}
       />
 
-      <br /><br />
+      <br />
+      <br />
 
-      <button onClick={addQuestion}>
-        Add Question
-      </button>
+      <button onClick={addQuestion}>Add Question</button>
 
-      <br /><br />
+      <br />
+      <br />
 
-      <button
-        onClick={() => navigate("/admin")}
-      >
-        Finish Quiz
-      </button>
-
+      <button onClick={() => navigate("/admin")}>Finish Quiz</button>
     </div>
-
   );
-
 }
 
 export default CreateQuiz;

@@ -4,6 +4,8 @@ import "../App.css";
 
 function Login() {
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
@@ -15,8 +17,8 @@ function Login() {
   const handleSubmit = async () => {
 
     const url = isRegister
-      ? "http://localhost:5000/register"
-      : "http://localhost:5000/login";
+      ? `${API_URL}/register`
+      : `${API_URL}/login`;
 
     const bodyData = isRegister
       ? { name, email, password, role }

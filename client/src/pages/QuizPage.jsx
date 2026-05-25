@@ -14,64 +14,43 @@ function QuizPage() {
 
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
+  const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-
     fetchQuestions();
-
   }, []);
 
-const fetchQuestions = async () => {
+  const fetchQuestions = async () => {
+    try {
+      const response = await fetch(`${API_URL}/questions`);
+      const data = await response.json();
 
-  try {
+      console.log(data);
 
-    const response = await fetch(
-      "http://localhost:5000/questions"
-    );
-
-    const data = await response.json();
-
-    console.log(data);
-
-    if (data.success) {
-
-      setQuestions(data.questions);
-
-    } else {
-
-      alert("Failed to load questions");
-
+      if (data.success) {
+        setQuestions(data.questions);
+      } else {
+        alert("Failed to load questions");
+      }
+    } catch (error) {
+      console.log("FETCH ERROR:", error);
     }
-
-  } catch (error) {
-
-    console.log("FETCH ERROR:", error);
-
-  }
-
-};
+  };
 
   const selectOption = (questionId, option) => {
-
     setAnswers({
       ...answers,
       [questionId]: option,
     });
-
   };
 
   const submitQuiz = () => {
-
     let totalScore = 0;
 
     questions.forEach((q) => {
-
       if (answers[q.id] === q.correctAnswer) {
-
         totalScore++;
-
       }
-
     });
 
     navigate("/result", {
@@ -81,11 +60,9 @@ const fetchQuestions = async () => {
         name: userName,
       },
     });
-
   };
 
   return (
-
     <div
       style={{
         minHeight: "100vh",
@@ -94,15 +71,13 @@ const fetchQuestions = async () => {
         padding: "30px",
       }}
     >
-
       <h1 style={{ textAlign: "center" }}>
         Quiz Started
       </h1>
-      
+
       <p>Total Questions: {questions.length}</p>
 
       {questions.map((q) => (
-
         <div
           key={q.id}
           style={{
@@ -111,7 +86,6 @@ const fetchQuestions = async () => {
             marginBottom: "20px",
           }}
         >
-
           <h2>{q.question}</h2>
 
           <button
@@ -207,9 +181,7 @@ const fetchQuestions = async () => {
           >
             {q.optionD}
           </button>
-
         </div>
-
       ))}
 
       <button
@@ -221,11 +193,8 @@ const fetchQuestions = async () => {
       >
         Submit Quiz
       </button>
-
     </div>
-
   );
-
 }
 
 export default QuizPage;

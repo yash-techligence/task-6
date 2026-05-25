@@ -15,8 +15,8 @@ function Login() {
   const handleSubmit = async () => {
 
     const url = isRegister
-      ? "https://task-6-obpi.onrender.com/register"
-      : "https://task-6-obpi.onrender.com/login";
+      ? "http://localhost:5000/register"
+      : "http://localhost:5000/login";
 
     const bodyData = isRegister
       ? { name, email, password, role }

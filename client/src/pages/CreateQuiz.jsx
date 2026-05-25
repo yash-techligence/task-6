@@ -11,31 +11,33 @@ function CreateQuiz() {
   const [correctAnswer, setCorrectAnswer] = useState("");
   const navigate = useNavigate();
 
-  const addQuestion = async () => {
+const addQuestion = async () => {
 
-    try {
+  try {
 
-      const response = await fetch(
-        "https://task-6-obpi.onrender.com/add-question",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            question,
-            optionA,
-            optionB,
-            optionC,
-            optionD,
-            correctAnswer,
-          }),
-        }
-      );
+    const response = await fetch(
+      "http://localhost:5000/add-question",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          question,
+          optionA,
+          optionB,
+          optionC,
+          optionD,
+          correctAnswer,
+        }),
+      }
+    );
 
-      const data = await response.json();
+    const data = await response.json();
 
-      alert(data.message);
+    alert(data.message);
+
+    if (data.success) {
 
       setQuestion("");
       setOptionA("");
@@ -44,14 +46,17 @@ function CreateQuiz() {
       setOptionD("");
       setCorrectAnswer("");
 
-    } catch (error) {
-
-      console.log(error);
-      alert("Server Error");
-
     }
 
-  };
+  } catch (error) {
+
+    console.log(error);
+
+    alert("Server Error");
+
+  }
+
+};
 
   return (
 

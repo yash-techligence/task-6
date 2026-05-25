@@ -21,29 +21,35 @@ function QuizPage() {
 
   }, []);
 
-  const fetchQuestions = async () => {
+const fetchQuestions = async () => {
 
-    try {
+  try {
 
-      const response = await fetch(
-        "https://task-6-obpi.onrender.com/questions"
-      );
+    const response = await fetch(
+      "http://localhost:5000/questions"
+    );
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (data.success) {
+    console.log(data);
 
-        setQuestions(data.questions);
+    if (data.success) {
 
-      }
+      setQuestions(data.questions);
 
-    } catch (error) {
+    } else {
 
-      console.log(error);
+      alert("Failed to load questions");
 
     }
 
-  };
+  } catch (error) {
+
+    console.log("FETCH ERROR:", error);
+
+  }
+
+};
 
   const selectOption = (questionId, option) => {
 
@@ -92,6 +98,8 @@ function QuizPage() {
       <h1 style={{ textAlign: "center" }}>
         Quiz Started
       </h1>
+      
+      <p>Total Questions: {questions.length}</p>
 
       {questions.map((q) => (
 

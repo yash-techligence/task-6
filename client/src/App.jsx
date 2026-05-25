@@ -64,7 +64,7 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="/create-quiz"
+          path="/admin"
           element={
             <AdminRoute>
               <CreateQuiz />

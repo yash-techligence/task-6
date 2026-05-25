@@ -1,39 +1,35 @@
 const db = require("../db/db");
 
 const getResults = (req, res) => {
-  const userId = req.user.id;
 
   const sql = `
-  SELECT 
-    r.id,
-    r.quiz_id,
-    r.score,
-    r.total_questions,
-    r.time_taken,
-    r.submitted_at,
-    q.title,
-    q.description
-  FROM results r
-  JOIN quizzes q ON r.quiz_id = q.id
-  WHERE r.user_id = ?
-  ORDER BY r.id DESC
-`;
+    SELECT
+      id,
+      quiz_id AS quizId,
+      score,
+      total_questions AS totalQuestions,
+      time_taken AS timeTaken
+    FROM results
+    ORDER BY id DESC
+  `;
 
-  db.query(sql, [userId], (err, result) => {
+  db.query(sql, (err, rows) => {
+
     if (err) {
+
       console.log(err);
 
       return res.status(500).json({
         success: false,
-        message: "Error fetching results",
+        message: err.message,
       });
+
     }
 
-    res.json({
-      success: true,
-      data: result,
-    });
+    res.json(rows);
+
   });
+
 };
 
 module.exports = {

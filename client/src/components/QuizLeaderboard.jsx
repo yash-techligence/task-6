@@ -1,5 +1,5 @@
 export default function QuizLeaderboard({
-  leaderboard,
+  leaderboard = [],
   loading,
   error,
   currentUser,
@@ -19,6 +19,7 @@ export default function QuizLeaderboard({
         >
           Leaderboard
         </p>
+
         <div className="space-y-3">
           {[...Array(5)].map((_, i) => (
             <div
@@ -46,7 +47,7 @@ export default function QuizLeaderboard({
     );
   }
 
-  if (leaderboard.length === 0) {
+  if (!leaderboard || leaderboard.length === 0) {
     return (
       <div
         className="rounded-3xl p-8 h-full flex items-center justify-center"
@@ -79,13 +80,18 @@ export default function QuizLeaderboard({
         >
           Leaderboard
         </span>
+
         <h2
           className="text-2xl font-extrabold mt-1"
           style={{ color: "var(--text)" }}
         >
           Top Players
         </h2>
-        <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>
+
+        <p
+          className="text-sm mt-1"
+          style={{ color: "var(--text-muted)" }}
+        >
           Ranked by score · this quiz
         </p>
       </div>
@@ -94,7 +100,15 @@ export default function QuizLeaderboard({
         {["#", "Player", "Score", "Time"].map((label, i) => (
           <span
             key={i}
-            className={`text-xs uppercase tracking-widest ${i === 0 ? "col-span-1" : i === 1 ? "col-span-6" : i === 2 ? "col-span-3 text-center" : "col-span-2 text-right"}`}
+            className={`text-xs uppercase tracking-widest ${
+              i === 0
+                ? "col-span-1"
+                : i === 1
+                ? "col-span-6"
+                : i === 2
+                ? "col-span-3 text-center"
+                : "col-span-2 text-right"
+            }`}
             style={{ color: "var(--text-muted)" }}
           >
             {label}
@@ -104,7 +118,14 @@ export default function QuizLeaderboard({
 
       <div className="space-y-2 flex-1 overflow-y-auto">
         {leaderboard.map((entry, index) => {
-          const isCurrentUser = entry.username === currentUser;
+          const username =
+            entry.username ||
+            entry.name ||
+            "User";
+
+          const isCurrentUser =
+            username === currentUser;
+
           const isTop3 = index < 3;
 
           return (
@@ -115,17 +136,24 @@ export default function QuizLeaderboard({
                 isCurrentUser
                   ? {
                       background: "rgba(200,255,0,0.05)",
-                      border: "1px solid rgba(200,255,0,0.2)",
+                      border:
+                        "1px solid rgba(200,255,0,0.2)",
                     }
-                  : { background: "var(--surface)" }
+                  : {
+                      background: "var(--surface)",
+                    }
               }
               onMouseEnter={(e) => {
-                if (!isCurrentUser)
-                  e.currentTarget.style.background = "var(--surface-hover)";
+                if (!isCurrentUser) {
+                  e.currentTarget.style.background =
+                    "var(--surface-hover)";
+                }
               }}
               onMouseLeave={(e) => {
-                if (!isCurrentUser)
-                  e.currentTarget.style.background = "var(--surface)";
+                if (!isCurrentUser) {
+                  e.currentTarget.style.background =
+                    "var(--surface)";
+                }
               }}
             >
               <span className="col-span-1 text-lg">
@@ -134,7 +162,9 @@ export default function QuizLeaderboard({
                 ) : (
                   <span
                     className="font-mono text-sm"
-                    style={{ color: "var(--text-faint)" }}
+                    style={{
+                      color: "var(--text-faint)",
+                    }}
                   >
                     {index + 1}
                   </span>
@@ -149,17 +179,23 @@ export default function QuizLeaderboard({
                     color: "var(--text-muted)",
                   }}
                 >
-                  {entry.username.charAt(0).toUpperCase()}
+                  {username.charAt(0).toUpperCase()}
                 </div>
+
                 <span
                   className="text-sm font-semibold truncate"
                   style={{
-                    color: isCurrentUser ? "var(--accent)" : "var(--text)",
+                    color: isCurrentUser
+                      ? "var(--accent)"
+                      : "var(--text)",
                   }}
                 >
-                  {entry.username}
+                  {username}
+
                   {isCurrentUser && (
-                    <span className="ml-1.5 text-xs opacity-60">(you)</span>
+                    <span className="ml-1.5 text-xs opacity-60">
+                      (you)
+                    </span>
                   )}
                 </span>
               </div>
@@ -167,7 +203,11 @@ export default function QuizLeaderboard({
               <div className="col-span-3 text-center">
                 <span
                   className="text-sm font-bold"
-                  style={{ color: isTop3 ? "var(--accent)" : "var(--text)" }}
+                  style={{
+                    color: isTop3
+                      ? "var(--accent)"
+                      : "var(--text)",
+                  }}
                 >
                   {entry.score}
                 </span>
@@ -176,7 +216,9 @@ export default function QuizLeaderboard({
               <div className="col-span-2 text-right">
                 <span
                   className="text-xs font-mono"
-                  style={{ color: "var(--text-muted)" }}
+                  style={{
+                    color: "var(--text-muted)",
+                  }}
                 >
                   {entry.timeTaken ?? "-"}s
                 </span>

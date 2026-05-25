@@ -20,6 +20,7 @@ export default function Login() {
     try {
       const data = await loginUser(form);
       if (data.success) {
+        console.log(data)
         login(data.user, data.token);
         navigate("/dashboard");
       } else {

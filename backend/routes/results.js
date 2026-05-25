@@ -1,10 +1,11 @@
 const express = require("express");
+
 const router = express.Router();
 
 const { getResults } = require("../controllers/resultsController");
 
-const verifyToken = require("../middleware/authMiddleware");
+/* REMOVED verifyToken */
 
-router.get("/", verifyToken, getResults);
+router.get("/", getResults);
 
 module.exports = router;

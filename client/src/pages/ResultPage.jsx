@@ -14,42 +14,43 @@ export default function ResultPage() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [score, setScore] = useState(state?.score ?? null);
-  const [total, setTotal] = useState(state?.total ?? null);
-  const [timeTaken, setTimeTaken] = useState(state?.timeTaken ?? null);
+
+  const [score, setScore] = useState(state?.score ?? 0);
+  const [total, setTotal] = useState(state?.total ?? 0);
+  const [timeTaken, setTimeTaken] = useState(state?.timeTaken ?? 0);
 
   const currentUser = user?.username;
-
-  const [resultLoaded, setResultLoaded] = useState(state !== null);
 
   useEffect(() => {
     const loadData = async () => {
       try {
         const [leaderboardData, results] = await Promise.all([
           fetchLeaderboard(quizId),
-          !resultLoaded ? fetchResults() : Promise.resolve(null),
+          fetchResults(),
         ]);
 
-        setLeaderboard(leaderboardData);
+        setLeaderboard(leaderboardData || []);
 
-        if (results !== null) {
-          const match = results.find((r) => r.quizId === Number(quizId));
-          if (match) {
-            setScore(match.score);
-            setTotal(match.totalQuestions);
-            setTimeTaken(match.timeTaken);
-            setResultLoaded(true);
-          }
+        // Find result for current quiz
+        const match = results.find(
+          (r) => Number(r.quizId) === Number(quizId)
+        );
+
+        if (match) {
+          setScore(match.score || 0);
+          setTotal(match.totalQuestions || 0);
+          setTimeTaken(match.timeTaken || 0);
         }
-      } catch {
+      } catch (err) {
+        console.log(err);
         setError("Could not load result data.");
       } finally {
         setLoading(false);
       }
-      };
+    };
 
     loadData();
-  }, [quizId, resultLoaded]);
+  }, [quizId]);
 
   return (
     <div
@@ -76,6 +77,7 @@ export default function ResultPage() {
           >
             <polyline points="15 18 9 12 15 6" />
           </svg>
+
           Back to Dashboard
         </button>
 
@@ -89,11 +91,12 @@ export default function ResultPage() {
 
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ScoreCard
-          score={score ?? 0}
-          total={total ?? 0}
-          timeTaken={timeTaken ?? 0}
+          score={score}
+          total={total}
+          timeTaken={timeTaken}
           onDashboard={() => navigate("/dashboard")}
         />
+
         <QuizLeaderboard
           leaderboard={leaderboard}
           loading={loading}

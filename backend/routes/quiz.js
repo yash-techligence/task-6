@@ -1,167 +1,283 @@
 const express = require("express");
+
 const router = express.Router();
+
 const db = require("../db/db");
+
 const verifyToken = require("../middleware/authMiddleware");
+
 const adminMiddleware = require("../middleware/adminMiddleware");
 
-/* CREATE QUIZ */
+/* =========================
+   CREATE QUIZ
+========================= */
 
-router.post("/create", verifyToken, adminMiddleware, (req, res) => {
-  const { title, time_limit } = req.body;
+router.post(
+  "/create",
+  verifyToken,
+  adminMiddleware,
+  (req, res) => {
 
-  if (!title) {
-    return res.status(400).json({
-      success: false,
-      message: "Title is required",
-    });
-  }
+    const { title, time_limit } = req.body;
 
-  const sql = "INSERT INTO quizzes (title, time_limit) VALUES (?, ?)";
-
-  db.query(sql, [title, time_limit || 60], (err, result) => {
-    if (err) {
-      return res.status(500).json({
+    if (!title) {
+      return res.status(400).json({
         success: false,
-        message: err.message,
+        message: "Title is required",
       });
     }
 
-    res.json({
-      success: true,
-      message: "Quiz created",
-      quiz_id: result.insertId,
-    });
-  });
-});
+    const sql =
+      "INSERT INTO quizzes (title, timeLimit) VALUES (?, ?)";
 
-/* ADD QUESTION */
+    db.query(
+      sql,
+      [title, time_limit || 60],
+      (err, result) => {
 
-router.post("/add-question", verifyToken, adminMiddleware, (req, res) => {
-  const { quiz_id, question, option1, option2, option3, option4, answer } =
-    req.body;
+        if (err) {
+          console.log(err);
 
-  if (
-    !quiz_id ||
-    !question ||
-    !option1 ||
-    !option2 ||
-    !option3 ||
-    !option4 ||
-    !answer
-  ) {
-    return res.status(400).json({
-      success: false,
-      message: "All fields are required",
-    });
-  }
+          return res.status(500).json({
+            success: false,
+            message: err.message,
+          });
+        }
 
-  const sql = `
-    INSERT INTO questions
-    (
-      quiz_id,
-      question,
-      option_a,
-      option_b,
-      option_c,
-      option_d,
-      correct_answer
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `;
-
-  db.query(
-    sql,
-    [quiz_id, question, option1, option2, option3, option4, answer],
-    (err, result) => {
-      if (err) {
-        return res.status(500).json({
-          success: false,
-          message: err.message,
+        res.json({
+          success: true,
+          message: "Quiz created successfully",
+          quiz_id: result.insertId,
         });
       }
+    );
+  }
+);
 
-      const updateSql =
-        "UPDATE quizzes SET total_questions = total_questions + 1 WHERE id = ?";
-      db.query(updateSql, [quiz_id], (updateErr) => {
-        if (updateErr) {
-          return res
-            .status(500)
-            .json({ success: false, message: updateErr.message });
+/* =========================
+   ADD QUESTION
+========================= */
+
+router.post(
+  "/add-question",
+  verifyToken,
+  adminMiddleware,
+  (req, res) => {
+
+    const {
+      quiz_id,
+      question,
+      option1,
+      option2,
+      option3,
+      option4,
+      answer,
+    } = req.body;
+
+    if (
+      !quiz_id ||
+      !question ||
+      !option1 ||
+      !option2 ||
+      !option3 ||
+      !option4 ||
+      !answer
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+
+    const sql = `
+      INSERT INTO questions
+      (
+        quiz_id,
+        question,
+        optionA,
+        optionB,
+        optionC,
+        optionD,
+        correctAnswer
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    db.query(
+      sql,
+      [
+        quiz_id,
+        question,
+        option1,
+        option2,
+        option3,
+        option4,
+        answer,
+      ],
+      (err, result) => {
+
+        if (err) {
+          console.log(err);
+
+          return res.status(500).json({
+            success: false,
+            message: err.message,
+          });
         }
+
         res.json({
           success: true,
           message: "Question added successfully",
           question_id: result.insertId,
         });
-      });
-    },
-  );
-});
+      }
+    );
+  }
+);
 
-/* GET QUIZZES */
+/* =========================
+   GET ALL QUIZZES
+========================= */
 
-router.get("/", verifyToken, (req, res) => {
+router.get("/", (req, res) => {
+
   const sql = `
     SELECT
       q.id AS quiz_id,
       q.title,
-      q.description,
-      q.total_questions,
-      q.time_limit,
+      q.timeLimit,
       qs.id AS question_id,
       qs.question,
-      qs.option_a,
-      qs.option_b,
-      qs.option_c,
-      qs.option_d,
-      qs.correct_answer
+      qs.optionA,
+      qs.optionB,
+      qs.optionC,
+      qs.optionD,
+      qs.correctAnswer
     FROM quizzes q
     LEFT JOIN questions qs
     ON q.id = qs.quiz_id
-    ORDER BY q.id, qs.id
+    ORDER BY q.id DESC
   `;
 
   db.query(sql, (err, rows) => {
+
     if (err) {
+
+      console.log(err);
+
       return res.status(500).json({
         success: false,
         message: err.message,
       });
     }
 
-    const quizzes = {};
+    const quizMap = {};
 
     rows.forEach((row) => {
-      if (!quizzes[row.quiz_id]) {
-        quizzes[row.quiz_id] = {
+
+      if (!quizMap[row.quiz_id]) {
+
+        quizMap[row.quiz_id] = {
           id: row.quiz_id,
           title: row.title,
-          description: row.description,
-          total_questions: row.total_questions,
-          time_limit: row.time_limit,
+          timeLimit: row.timeLimit || 60,
           questions: [],
         };
       }
 
-      if (row.question_id) {
-        quizzes[row.quiz_id].questions.push({
+      if (row.question) {
+
+        quizMap[row.quiz_id].questions.push({
           id: row.question_id,
           question: row.question,
-          option1: row.option_a,
-          option2: row.option_b,
-          option3: row.option_c,
-          option4: row.option_d,
-          correct_option: row.correct_answer,
+          option1: row.optionA,
+          option2: row.optionB,
+          option3: row.optionC,
+          option4: row.optionD,
+          correct_option: row.correctAnswer,
         });
       }
     });
 
     res.json({
       success: true,
-      quizzes: Object.values(quizzes).map((q) => ({
-        ...q,
-        total_questions: q.questions.length,
-      })),
+      quizzes: Object.values(quizMap),
+    });
+  });
+});
+
+/* =========================
+   GET SINGLE QUIZ
+========================= */
+
+router.get("/:id", (req, res) => {
+
+  const quizId = req.params.id;
+
+  const sql = `
+    SELECT
+      q.id AS quiz_id,
+      q.title,
+      q.timeLimit,
+      qs.id AS question_id,
+      qs.question,
+      qs.optionA,
+      qs.optionB,
+      qs.optionC,
+      qs.optionD,
+      qs.correctAnswer
+    FROM quizzes q
+    LEFT JOIN questions qs
+    ON q.id = qs.quiz_id
+    WHERE q.id = ?
+  `;
+
+  db.query(sql, [quizId], (err, rows) => {
+
+    if (err) {
+
+      console.log(err);
+
+      return res.status(500).json({
+        success: false,
+        message: err.message,
+      });
+    }
+
+    if (rows.length === 0) {
+
+      return res.status(404).json({
+        success: false,
+        message: "Quiz not found",
+      });
+    }
+
+    const quiz = {
+      id: rows[0].quiz_id,
+      title: rows[0].title,
+      timeLimit: rows[0].timeLimit || 60,
+      questions: [],
+    };
+
+    rows.forEach((row) => {
+
+      if (row.question) {
+
+        quiz.questions.push({
+          id: row.question_id,
+          question: row.question,
+          option1: row.optionA,
+          option2: row.optionB,
+          option3: row.optionC,
+          option4: row.optionD,
+          correct_option: row.correctAnswer,
+        });
+      }
+    });
+
+    res.json({
+      success: true,
+      quiz,
     });
   });
 });

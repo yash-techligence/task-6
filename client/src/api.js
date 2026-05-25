@@ -29,7 +29,9 @@ export const registerUser = async ({
 
 export const loginUser = async ({
   email,
+  username,
   password,
+  role,
 }) => {
 
   const response = await fetch(`${BASE_URL}/login`, {
@@ -37,10 +39,22 @@ export const loginUser = async ({
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      email,
-      password,
-    }),
+
+    body: JSON.stringify(
+
+      role === "admin"
+        ? {
+            username,
+            password,
+            role,
+          }
+        : {
+            email,
+            password,
+            role,
+          }
+
+    ),
   });
 
   return response.json();

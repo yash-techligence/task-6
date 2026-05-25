@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const BASE_URL = "http://localhost:5000";
+const BASE_URL = "https://task-6-2-1zvc.onrender.com";
 
 export default function CreateQuiz() {
   const navigate = useNavigate();

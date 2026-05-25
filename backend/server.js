@@ -67,61 +67,64 @@ app.post("/register", async (req, res) => {
 
 /* LOGIN */
 app.post("/login", (req, res) => {
-  const { email, password } = req.body;
-  const sql = "SELECT * FROM users WHERE email = ?";
-  db.query(
-    sql,
-    [email],
-    async (err, result) => {
-      if (err) {
-        console.log("LOGIN ERROR:", err);
-        return res.status(500).json({
-          success: false,
-          message: "Server Error",
-        });
-      }
-      if (result.length === 0) {
-        return res.json({
-          success: false,
-          message: "User not found",
-        });
-      }
-      const user = result[0];
-      const match = await bcrypt.compare(
-        password,
-        user.password
-      );
-      if (!match) {
-        return res.json({
-          success: false,
-          message: "Invalid Password",
-        });
-      }
-      const token = jwt.sign(
-        {
-          id: user.id,
-          email: user.email,
-          role: user.role,
-        },
-        process.env.JWT_SECRET,
-        {
-          expiresIn: "1h",
-        }
-      );
-      res.json({
-        success: true,
-        message: "Login Successful",
-        token,
-        user: {
-          id: user.id,
-          username: user.name,
-          name: user.name,
-          email: user.email,
-          role: user.role || "user",
-        },
+  const { email, username, password, role } = req.body;
+
+  const sql =
+    role === "admin"
+      ? "SELECT * FROM users WHERE name = ? AND role = 'admin'"
+      : "SELECT * FROM users WHERE email = ?";
+
+  const value = role === "admin" ? username : email;
+
+  db.query(sql, [value], async (err, result) => {
+    if (err) {
+      console.log("LOGIN ERROR:", err);
+      return res.status(500).json({
+        success: false,
+        message: "Server Error",
       });
     }
-  );
+    if (result.length === 0) {
+      return res.json({
+        success: false,
+        message:
+          role === "admin"
+            ? "Admin not found"
+            : "User not found",
+      });
+    }
+    const user = result[0];
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) {
+      return res.json({
+        success: false,
+        message: "Invalid Password",
+      });
+    }
+    const token = jwt.sign(
+      {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h",
+      }
+    );
+    res.json({
+      success: true,
+      message: "Login Successful",
+      token,
+      user: {
+        id: user.id,
+        username: user.name,
+        name: user.name,
+        email: user.email,
+        role: user.role || "user",
+      },
+    });
+  });
 });
 
 /* PROTECTED ROUTE */

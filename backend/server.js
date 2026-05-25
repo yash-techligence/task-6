@@ -6,14 +6,6 @@ const jwt = require("jsonwebtoken");
 const db = require("./db/db");
 
 const verifyToken = require("./middleware/authMiddleware");
-const express = require("express");
-const cors = require("cors");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-
-const db = require("./db/db");
-
-const verifyToken = require("./middleware/authMiddleware");
 
 const quizRoutes = require("./routes/quiz");
 const resultsRoutes = require("./routes/results");
